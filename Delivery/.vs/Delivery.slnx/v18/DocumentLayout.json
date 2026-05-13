@@ -1,0 +1,152 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|c:\\users\\bestybest\\source\\repos\\delivery\\login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|solutionrelative:login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|c:\\users\\bestybest\\source\\repos\\delivery\\database.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|solutionrelative:database.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|c:\\users\\bestybest\\source\\repos\\delivery\\riderform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|solutionrelative:riderform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|c:\\users\\bestybest\\source\\repos\\delivery\\riderform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|solutionrelative:riderform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|c:\\users\\bestybest\\source\\repos\\delivery\\restaurantform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|solutionrelative:restaurantform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|c:\\users\\bestybest\\source\\repos\\delivery\\customerform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|solutionrelative:customerform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|c:\\users\\bestybest\\source\\repos\\delivery\\login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|solutionrelative:login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|c:\\users\\bestybest\\source\\repos\\delivery\\delivery.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{C51A2A16-F8BB-490D-B7A7-C1B169753E66}|Delivery.csproj|solutionrelative:delivery.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 7,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "RiderForm.cs",
+              "DocumentMoniker": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\RiderForm.cs",
+              "RelativeDocumentMoniker": "RiderForm.cs",
+              "ToolTip": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\RiderForm.cs",
+              "RelativeToolTip": "RiderForm.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAAAewBIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-13T16:35:31.061Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "RiderForm.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\RiderForm.cs",
+              "RelativeDocumentMoniker": "RiderForm.cs",
+              "ToolTip": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\RiderForm.cs [Design]",
+              "RelativeToolTip": "RiderForm.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-13T16:34:55.49Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "RestaurantForm.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\RestaurantForm.cs",
+              "RelativeDocumentMoniker": "RestaurantForm.cs",
+              "ToolTip": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\RestaurantForm.cs [Design]",
+              "RelativeToolTip": "RestaurantForm.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-13T16:33:54.836Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "CustomerForm.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\CustomerForm.cs",
+              "RelativeDocumentMoniker": "CustomerForm.cs",
+              "ToolTip": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\CustomerForm.cs [Design]",
+              "RelativeToolTip": "CustomerForm.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-13T16:33:01.193Z",
+              "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Database.cs",
+              "DocumentMoniker": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\Database.cs",
+              "RelativeDocumentMoniker": "Database.cs",
+              "ToolTip": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\Database.cs",
+              "RelativeToolTip": "Database.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-13T16:18:55.038Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Delivery",
+              "DocumentMoniker": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\Delivery.csproj",
+              "RelativeDocumentMoniker": "Delivery.csproj",
+              "ToolTip": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\Delivery.csproj",
+              "RelativeToolTip": "Delivery.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-05-13T16:17:57.194Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Login.cs",
+              "DocumentMoniker": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\Login.cs",
+              "RelativeDocumentMoniker": "Login.cs",
+              "ToolTip": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\Login.cs",
+              "RelativeToolTip": "Login.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-13T16:12:02.668Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Login.cs [Design]",
+              "DocumentMoniker": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\Login.cs",
+              "RelativeDocumentMoniker": "Login.cs",
+              "ToolTip": "C:\\Users\\BestyBest\\source\\Repos\\Delivery\\Login.cs [Design]",
+              "RelativeToolTip": "Login.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-05-13T16:11:09.501Z",
+              "EditorCaption": " [Design]"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
