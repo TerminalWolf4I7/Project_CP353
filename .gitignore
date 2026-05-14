@@ -1,0 +1,48 @@
+# Build outputs
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+*.tmp
+*.log
+*.cache
+*.pdb
+*.appx
+*.appxrecipe
+*.vspscc
+*.vssscc
+
+# NuGet artifacts
+*.nupkg
+*.snupkg
+packages/
+**/packages/*
+*.nuget.props
+*.nuget.targets
+
+# JetBrains / Rider
+.idea/
+*.sln.iml
+*.DotSettings.user
+
+# VS Code (remove if you want to commit workspace settings)
+.vscode/
+
+# Test results
+TestResults/
+
+# OS junk
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+
+# Backup / temp
+*.bak
+*.swp
+*.tmp
