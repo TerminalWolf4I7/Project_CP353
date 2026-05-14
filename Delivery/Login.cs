@@ -46,7 +46,7 @@ namespace Delivery
                         if (role == "Customer")
                             nextForm = new CustomerForm();
                         else if (role == "Restaurant")
-                            nextForm = new RestaurantForm();
+                            nextForm = new RestaurantForm(userId);
                         else if (role == "Rider")
                             nextForm = new RiderForm();
                         else
