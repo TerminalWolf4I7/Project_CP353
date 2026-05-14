@@ -1,20 +1,55 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using Npgsql;
 
 namespace Delivery
 {
     public partial class RestaurantForm : Form
     {
-        public RestaurantForm()
+        private readonly int userId;
+
+        public RestaurantForm(int userId)
         {
             InitializeComponent();
+            this.userId = userId;
+
+            Load += RestaurantForm_Load;
+            button2.Click += ButtonEdit_Click;
+        }
+
+        private void RestaurantForm_Load(object? sender, EventArgs e)
+        {
+            try
+            {
+                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
+                {
+                    conn.Open();
+
+                    string query = "SELECT name FROM restaurants WHERE user_id = @user_id";
+
+                    using (NpgsqlCommand cmd = new NpgsqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@user_id", userId);
+                        object result = cmd.ExecuteScalar();
+
+                        if (result != null)
+                        {
+                            label1.Text = result.ToString();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private void ButtonEdit_Click(object? sender, EventArgs e)
+        {
+            RestaurantEditForm editForm = new RestaurantEditForm(userId);
+            editForm.ShowDialog(this);
         }
     }
+
 }

@@ -48,7 +48,7 @@ namespace Delivery
                             }
                             else if (role == "Restaurant")
                             {
-                                RestaurantForm restaurant = new RestaurantForm();
+                                RestaurantForm restaurant = new RestaurantForm(userId);
                                 restaurant.Show();
                             }
                             else if (role == "Rider")
