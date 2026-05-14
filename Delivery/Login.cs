@@ -15,9 +15,7 @@ namespace Delivery
         {
             try
             {
-                int userId;
-
-                if (!int.TryParse(txtUserId.Text, out userId))
+                if (!int.TryParse(txtUserId.Text, out int userId))
                 {
                     MessageBox.Show("Please enter number only");
                     return;
@@ -35,39 +33,33 @@ namespace Delivery
 
                         object result = cmd.ExecuteScalar();
 
-                        if (result != null)
-                        {
-                            string role = result.ToString();
-
-                            MessageBox.Show("Login Success");
-
-                            if (role == "Customer")
-                            {
-                                CustomerForm customer = new CustomerForm();
-                                customer.Show();
-                            }
-                            else if (role == "Restaurant")
-                            {
-                                RestaurantForm restaurant = new RestaurantForm();
-                                restaurant.Show();
-                            }
-                            else if (role == "Rider")
-                            {
-                                RiderForm rider = new RiderForm();
-                                rider.Show();
-                            }
-                            else
-                            {
-                                MessageBox.Show("Unknown role: " + role);
-                                return;
-                            }
-
-                            this.Hide();
-                        }
-                        else
+                        if (result == null)
                         {
                             MessageBox.Show("User ID not found");
+                            return;
                         }
+
+                        string role = result.ToString();
+
+                        Form nextForm = null;
+
+                        if (role == "Customer")
+                            nextForm = new CustomerForm();
+                        else if (role == "Restaurant")
+                            nextForm = new RestaurantForm();
+                        else if (role == "Rider")
+                            nextForm = new RiderForm();
+                        else
+                        {
+                            MessageBox.Show("Unknown role: " + role);
+                            return;
+                        }
+
+                        MessageBox.Show("Login Success");
+
+                        nextForm.FormClosed += (s, args) => Application.Exit();
+                        nextForm.Show();
+                        this.Hide();
                     }
                 }
             }
