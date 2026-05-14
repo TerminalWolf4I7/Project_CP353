@@ -15,18 +15,23 @@ namespace Delivery
         {
             try
             {
-                using (NpgsqlConnection conn =
-                    new NpgsqlConnection(Database.connectionString))
+                int userId;
+
+                if (!int.TryParse(txtUserId.Text, out userId))
+                {
+                    MessageBox.Show("Please enter number only");
+                    return;
+                }
+
+                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
                 {
                     conn.Open();
 
-                    string query =
-                        "SELECT Role FROM Users WHERE UserNumber=@id";
+                    string query = "SELECT role FROM users WHERE user_id = @id";
 
-                    using (NpgsqlCommand cmd =
-                        new NpgsqlCommand(query, conn))
+                    using (NpgsqlCommand cmd = new NpgsqlCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("@id", txtUserId.Text);
+                        cmd.Parameters.AddWithValue("@id", userId);
 
                         object result = cmd.ExecuteScalar();
 
@@ -38,24 +43,23 @@ namespace Delivery
 
                             if (role == "Customer")
                             {
-                                CustomerForm customer =
-                                    new CustomerForm();
-
+                                CustomerForm customer = new CustomerForm();
                                 customer.Show();
                             }
                             else if (role == "Restaurant")
                             {
-                                RestaurantForm restaurant =
-                                    new RestaurantForm();
-
+                                RestaurantForm restaurant = new RestaurantForm();
                                 restaurant.Show();
                             }
                             else if (role == "Rider")
                             {
-                                RiderForm rider =
-                                    new RiderForm();
-
+                                RiderForm rider = new RiderForm();
                                 rider.Show();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Unknown role: " + role);
+                                return;
                             }
 
                             this.Hide();
