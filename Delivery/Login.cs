@@ -43,7 +43,7 @@ namespace Delivery
 
                             if (role == "Customer")
                             {
-                                CustomerForm customer = new CustomerForm();
+                                CustomerForm customer = new CustomerForm(userId);
                                 customer.Show();
                             }
                             else if (role == "Restaurant")
