@@ -9,6 +9,6 @@ namespace Delivery
     public class Database
     {
         public static string connectionString =
-                    "Host=localhost;Port=5432;Username=postgres;Password=1234;Database=DeliveryDB";//password เดิม 1234
+                    "Host=localhost;Port=5433;Username=postgres;Password=1234;Database=DeliveryDB";//password เดิม 1234
     }
 }

@@ -50,7 +50,7 @@ namespace Delivery
                         }
                         else if (role == "Rider")
                         {
-                            nextForm = new RiderForm();
+                            nextForm = new RiderForm(userId);
                         }
                         else
                         {
@@ -77,6 +77,11 @@ namespace Delivery
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void txtUserId_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

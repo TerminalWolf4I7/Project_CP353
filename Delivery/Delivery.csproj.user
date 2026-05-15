@@ -14,6 +14,9 @@
     <Compile Update="MenuForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="RiderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="OrderStatusForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -26,7 +29,7 @@
     <Compile Update="RestaurantOrdersForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="RiderForm.cs">
+    <Compile Update="RiderOrderForm.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
