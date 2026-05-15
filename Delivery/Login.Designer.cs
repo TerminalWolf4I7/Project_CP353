@@ -1,137 +1,181 @@
+using System.Drawing;
+using System.Windows.Forms;
+
 namespace Delivery
 {
     partial class Login
     {
-        /// <summary>
-        ///  Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        ///  Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
+            if (disposing && (components != null)) components.Dispose();
             base.Dispose(disposing);
         }
 
         #region Windows Form Designer generated code
 
-        /// <summary>
-        ///  Required method for Designer support - do not modify
-        ///  the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
-            panelMain = new Panel();
-            lblUserHint = new Label();
-            lblTitle = new Label();
+            panelLeft = new Panel();
+            lblBrand = new Label();
+            lblTagline = new Label();
+            lblEmoji = new Label();
+            panelRight = new Panel();
+            panelCard = new Panel();
+            lblWelcome = new Label();
             lblSubtitle = new Label();
+            lblUserHint = new Label();
             txtUserId = new TextBox();
             btnLogin = new Button();
-            panelMain.SuspendLayout();
+            lblVersion = new Label();
+
+            panelLeft.SuspendLayout();
+            panelRight.SuspendLayout();
+            panelCard.SuspendLayout();
             SuspendLayout();
-            // 
-            // panelMain
-            // 
-            panelMain.BackColor = Color.White;
-            panelMain.BorderStyle = BorderStyle.FixedSingle;
-            panelMain.Controls.Add(lblUserHint);
-            panelMain.Controls.Add(lblTitle);
-            panelMain.Controls.Add(lblSubtitle);
-            panelMain.Controls.Add(txtUserId);
-            panelMain.Controls.Add(btnLogin);
-            panelMain.Location = new Point(150, 80);
-            panelMain.Name = "panelMain";
-            panelMain.Size = new Size(500, 400);
-            panelMain.TabIndex = 0;
-            // 
-            // lblUserHint
-            // 
-            lblUserHint.AutoSize = true;
-            lblUserHint.Font = new Font("Segoe UI", 8F);
-            lblUserHint.ForeColor = Color.Silver;
-            lblUserHint.Location = new Point(70, 165);
-            lblUserHint.Name = "lblUserHint";
-            lblUserHint.Size = new Size(61, 21);
-            lblUserHint.TabIndex = 4;
-            lblUserHint.Text = "User ID";
-            // 
-            // lblTitle
-            // 
-            lblTitle.AutoSize = true;
-            lblTitle.Font = new Font("Segoe UI", 28F, FontStyle.Bold);
-            lblTitle.ForeColor = Color.FromArgb(46, 204, 113);
-            lblTitle.Location = new Point(90, 40);
-            lblTitle.Name = "lblTitle";
-            lblTitle.Size = new Size(330, 74);
-            lblTitle.TabIndex = 0;
-            lblTitle.Text = "DELIVERY";
-            // 
+
+            // === panelLeft (Green Branding) ===
+            panelLeft.BackColor = Color.FromArgb(39, 174, 96);
+            panelLeft.Dock = DockStyle.Left;
+            panelLeft.Size = new Size(380, 600);
+            panelLeft.Controls.Add(lblEmoji);
+            panelLeft.Controls.Add(lblBrand);
+            panelLeft.Controls.Add(lblTagline);
+
+            // lblEmoji
+            lblEmoji.Text = "🛵";
+            lblEmoji.Font = new Font("Segoe UI Emoji", 52F);
+            lblEmoji.ForeColor = Color.White;
+            lblEmoji.AutoSize = true;
+            lblEmoji.Location = new Point(130, 150);
+            lblEmoji.Name = "lblEmoji";
+
+            // lblBrand
+            lblBrand.Text = "DELIVERY";
+            lblBrand.Font = new Font("Segoe UI", 32F, FontStyle.Bold);
+            lblBrand.ForeColor = Color.White;
+            lblBrand.AutoSize = true;
+            lblBrand.Location = new Point(80, 280);
+            lblBrand.Name = "lblBrand";
+
+            // lblTagline
+            lblTagline.Text = "อาหารอร่อย ส่งถึงมือคุณ\nเร็วกว่าที่คิด 🔥";
+            lblTagline.Font = new Font("Segoe UI", 11F);
+            lblTagline.ForeColor = Color.FromArgb(200, 255, 220);
+            lblTagline.Size = new Size(300, 70);
+            lblTagline.Location = new Point(40, 360);
+            lblTagline.Name = "lblTagline";
+            lblTagline.TextAlign = ContentAlignment.MiddleCenter;
+
+            // === panelRight (White Background) ===
+            panelRight.BackColor = Color.FromArgb(245, 248, 250);
+            panelRight.Dock = DockStyle.Fill;
+            panelRight.Controls.Add(panelCard);
+            panelRight.Controls.Add(lblVersion);
+
+            // === panelCard (Login Card) ===
+            panelCard.BackColor = Color.White;
+            panelCard.Size = new Size(360, 380);
+            panelCard.Location = new Point(50, 100);
+            panelCard.Name = "panelCard";
+            panelCard.Controls.Add(lblWelcome);
+            panelCard.Controls.Add(lblSubtitle);
+            panelCard.Controls.Add(lblUserHint);
+            panelCard.Controls.Add(txtUserId);
+            panelCard.Controls.Add(btnLogin);
+
+            // lblWelcome
+            lblWelcome.Text = "ยินดีต้อนรับ! 👋";
+            lblWelcome.Font = new Font("Segoe UI", 20F, FontStyle.Bold);
+            lblWelcome.ForeColor = Color.FromArgb(30, 30, 30);
+            lblWelcome.AutoSize = true;
+            lblWelcome.Location = new Point(30, 35);
+            lblWelcome.Name = "lblWelcome";
+
             // lblSubtitle
-            // 
-            lblSubtitle.AutoSize = true;
+            lblSubtitle.Text = "เข้าสู่ระบบเพื่อสั่งอาหารอร่อยๆ";
             lblSubtitle.Font = new Font("Segoe UI", 10F);
             lblSubtitle.ForeColor = Color.Gray;
-            lblSubtitle.Location = new Point(135, 110);
+            lblSubtitle.AutoSize = true;
+            lblSubtitle.Location = new Point(30, 85);
             lblSubtitle.Name = "lblSubtitle";
-            lblSubtitle.Size = new Size(244, 28);
-            lblSubtitle.TabIndex = 1;
-            lblSubtitle.Text = "Welcome to the future app";
-            // 
+
+            // lblUserHint
+            lblUserHint.Text = "USER ID";
+            lblUserHint.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
+            lblUserHint.ForeColor = Color.FromArgb(39, 174, 96);
+            lblUserHint.AutoSize = true;
+            lblUserHint.Location = new Point(30, 145);
+            lblUserHint.Name = "lblUserHint";
+
             // txtUserId
-            // 
-            txtUserId.Font = new Font("Segoe UI", 14F);
-            txtUserId.Location = new Point(70, 190);
+            txtUserId.Font = new Font("Segoe UI", 13F);
+            txtUserId.Location = new Point(30, 170);
             txtUserId.Name = "txtUserId";
-            txtUserId.PlaceholderText = "กรอก User ID ของคุณ";
-            txtUserId.Size = new Size(360, 45);
-            txtUserId.TabIndex = 2;
-            txtUserId.TextAlign = HorizontalAlignment.Center;
-            // 
+            txtUserId.PlaceholderText = "เช่น  1, 2, 3...";
+            txtUserId.Size = new Size(300, 40);
+            txtUserId.BorderStyle = BorderStyle.FixedSingle;
+            txtUserId.TabIndex = 0;
+
             // btnLogin
-            // 
-            btnLogin.BackColor = Color.FromArgb(46, 204, 113);
+            btnLogin.BackColor = Color.FromArgb(39, 174, 96);
             btnLogin.FlatStyle = FlatStyle.Flat;
-            btnLogin.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnLogin.FlatAppearance.BorderSize = 0;
+            btnLogin.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
             btnLogin.ForeColor = Color.White;
-            btnLogin.Location = new Point(70, 260);
+            btnLogin.Location = new Point(30, 250);
             btnLogin.Name = "btnLogin";
-            btnLogin.Size = new Size(360, 60);
-            btnLogin.TabIndex = 3;
-            btnLogin.Text = "เข้าสู่ระบบ";
+            btnLogin.Size = new Size(300, 55);
+            btnLogin.TabIndex = 1;
+            btnLogin.Text = "เข้าสู่ระบบ  →";
             btnLogin.UseVisualStyleBackColor = false;
+            btnLogin.Cursor = Cursors.Hand;
             btnLogin.Click += btnLogin_Click;
-            // 
-            // Login
-            // 
+
+            // lblVersion
+            lblVersion.Text = "Delivery App v1.0  |  CP353 Project";
+            lblVersion.Font = new Font("Segoe UI", 8F);
+            lblVersion.ForeColor = Color.LightGray;
+            lblVersion.AutoSize = true;
+            lblVersion.Location = new Point(90, 540);
+            lblVersion.Name = "lblVersion";
+
+            // === Form ===
             AcceptButton = btnLogin;
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(240, 240, 240);
-            ClientSize = new Size(800, 560);
-            Controls.Add(panelMain);
+            ClientSize = new Size(840, 600);
+            Controls.Add(panelRight);
+            Controls.Add(panelLeft);
             FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
             Name = "Login";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Delivery App - Login";
-            panelMain.ResumeLayout(false);
-            panelMain.PerformLayout();
+            Text = "Delivery App — Login";
+
+            panelLeft.ResumeLayout(false);
+            panelLeft.PerformLayout();
+            panelCard.ResumeLayout(false);
+            panelCard.PerformLayout();
+            panelRight.ResumeLayout(false);
+            panelRight.PerformLayout();
             ResumeLayout(false);
         }
 
         #endregion
 
-        private Panel panelMain;
-        private Label lblUserHint;
-        private Label lblTitle;
+        private Panel panelLeft;
+        private Label lblBrand;
+        private Label lblTagline;
+        private Label lblEmoji;
+        private Panel panelRight;
+        private Panel panelCard;
+        private Label lblWelcome;
         private Label lblSubtitle;
+        private Label lblUserHint;
         private TextBox txtUserId;
         private Button btnLogin;
+        private Label lblVersion;
     }
 }

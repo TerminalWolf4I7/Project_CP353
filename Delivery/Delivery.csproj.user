@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup />
   <ItemGroup>
     <Compile Update="CartForm.cs">
       <SubType>Form</SubType>
@@ -13,12 +14,9 @@
     <Compile Update="MenuForm.cs">
       <SubType>Form</SubType>
     </Compile>
-<<<<<<< HEAD
-=======
     <Compile Update="OrderStatusForm.cs">
       <SubType>Form</SubType>
     </Compile>
->>>>>>> 3b511a8f186b3fd1172301f2fbdc94c361aa531c
     <Compile Update="RestaurantEditForm.cs">
       <SubType>Form</SubType>
     </Compile>

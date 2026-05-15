@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -11,16 +11,18 @@ namespace Delivery
         private List<string> cartItems;
         private Form menuForm;
         private string restaurantName;
+        private int userId; // เพิ่ม userId
         private FlowLayoutPanel itemPanel;
         private Label totalLabel;
 
-        public CartForm(List<string> items, Form previousMenuForm, string restaurant)
+        public CartForm(List<string> items, Form previousMenuForm, string restaurant, int userId) // เพิ่ม userId ใน constructor
         {
             InitializeComponent();
 
             cartItems = items;
             menuForm = previousMenuForm;
             restaurantName = restaurant;
+            this.userId = userId;
 
             SetupUI();
             LoadCartItems();
@@ -221,7 +223,8 @@ namespace Delivery
 
             cartItems.Clear();
 
-            OrderStatusForm statusForm = new OrderStatusForm(restaurantName);
+            // ส่ง userId ไปที่ OrderStatusForm
+            OrderStatusForm statusForm = new OrderStatusForm(restaurantName, userId);
             statusForm.Show();
 
             menuForm.Close();

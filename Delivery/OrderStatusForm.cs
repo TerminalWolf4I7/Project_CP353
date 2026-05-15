@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -8,6 +8,7 @@ namespace Delivery
     {
         private string restaurantName;
         private int orderId;
+        private int userId; // เพิ่ม userId
 
         private Label statusLabel;
         private Label detailLabel;
@@ -24,12 +25,13 @@ namespace Delivery
             "จัดส่งสำเร็จ"
         };
 
-        public OrderStatusForm(string restaurant)
+        public OrderStatusForm(string restaurant, int userId) // เพิ่ม userId ใน constructor
         {
             InitializeComponent();
 
-            restaurantName = restaurant;
-            orderId = new Random().Next(1000, 9999);
+            this.restaurantName = restaurant;
+            this.userId = userId;
+            this.orderId = new Random().Next(1000, 9999);
 
             SetupUI();
             StartStatusSimulation();
@@ -152,7 +154,8 @@ namespace Delivery
 
         private void CustomerButton_Click(object sender, EventArgs e)
         {
-            CustomerForm customerForm = new CustomerForm();
+            // ส่ง userId กลับไปให้ CustomerForm ด้วย
+            CustomerForm customerForm = new CustomerForm(userId);
             customerForm.Show();
             this.Close();
         }

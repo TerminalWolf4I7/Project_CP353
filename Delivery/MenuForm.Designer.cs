@@ -1,11 +1,7 @@
-<<<<<<< HEAD
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace Delivery
-=======
-﻿namespace Delivery
->>>>>>> 3b511a8f186b3fd1172301f2fbdc94c361aa531c
 {
     partial class MenuForm
     {
@@ -35,7 +31,6 @@ namespace Delivery
         /// </summary>
         private void InitializeComponent()
         {
-<<<<<<< HEAD
             panelHeader = new Panel();
             lblRestaurantName = new Label();
             flpMenu = new FlowLayoutPanel();
@@ -140,14 +135,3 @@ namespace Delivery
         private Button btnCheckout;
     }
 }
-=======
-            this.components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Text = "MenuForm";
-        }
-
-        #endregion
-    }
-}
->>>>>>> 3b511a8f186b3fd1172301f2fbdc94c361aa531c

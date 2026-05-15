@@ -1,97 +1,113 @@
+using System.Drawing;
+using System.Windows.Forms;
+
 namespace Delivery
 {
     partial class CustomerForm
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
+            if (disposing && (components != null)) components.Dispose();
             base.Dispose(disposing);
         }
 
         #region Windows Form Designer generated code
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
+            panelTopBar = new Panel();
+            lblAppTitle = new Label();
+            lblGreeting = new Label();
+            lblSubheader = new Label();
+            panelSearch = new Panel();
+            lblSearchIcon = new Label();
             flpRestaurants = new FlowLayoutPanel();
-            labelHeader = new Label();
+            panelTopBar.SuspendLayout();
+            panelSearch.SuspendLayout();
             SuspendLayout();
-            // 
-            // flpRestaurants
-            // 
-<<<<<<< HEAD
+
+            // === panelTopBar ===
+            panelTopBar.BackColor = Color.FromArgb(39, 174, 96);
+            panelTopBar.Dock = DockStyle.Top;
+            panelTopBar.Size = new Size(1280, 130);
+            panelTopBar.Controls.Add(lblAppTitle);
+            panelTopBar.Controls.Add(lblGreeting);
+
+            // lblAppTitle
+            lblAppTitle.Text = "🛵  DELIVERY";
+            lblAppTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            lblAppTitle.ForeColor = Color.White;
+            lblAppTitle.AutoSize = true;
+            lblAppTitle.Location = new Point(30, 20);
+            lblAppTitle.Name = "lblAppTitle";
+
+            // lblGreeting
+            lblGreeting.Text = "อยากกินอะไรวันนี้? 😋";
+            lblGreeting.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
+            lblGreeting.ForeColor = Color.White;
+            lblGreeting.AutoSize = true;
+            lblGreeting.Location = new Point(30, 55);
+            lblGreeting.Name = "lblGreeting";
+
+            // === panelSearch (decorative bar) ===
+            panelSearch.BackColor = Color.FromArgb(240, 248, 244);
+            panelSearch.Dock = DockStyle.Top;
+            panelSearch.Size = new Size(1280, 55);
+            panelSearch.Controls.Add(lblSearchIcon);
+            panelSearch.Controls.Add(lblSubheader);
+
+            // lblSearchIcon
+            lblSearchIcon.Text = "🏪";
+            lblSearchIcon.Font = new Font("Segoe UI Emoji", 14F);
+            lblSearchIcon.AutoSize = true;
+            lblSearchIcon.Location = new Point(25, 12);
+            lblSearchIcon.Name = "lblSearchIcon";
+
+            // lblSubheader
+            lblSubheader.Text = "ร้านอาหารทั้งหมด — คลิกที่การ์ดเพื่อดูเมนู";
+            lblSubheader.Font = new Font("Segoe UI", 10F);
+            lblSubheader.ForeColor = Color.FromArgb(100, 100, 100);
+            lblSubheader.AutoSize = true;
+            lblSubheader.Location = new Point(60, 16);
+            lblSubheader.Name = "lblSubheader";
+
+            // === flpRestaurants ===
             flpRestaurants.AutoScroll = true;
-            flpRestaurants.BackColor = Color.WhiteSmoke;
+            flpRestaurants.BackColor = Color.FromArgb(245, 248, 250);
             flpRestaurants.Dock = DockStyle.Fill;
-            flpRestaurants.Location = new Point(0, 80);
             flpRestaurants.Name = "flpRestaurants";
-            flpRestaurants.Padding = new Padding(20);
-            flpRestaurants.Size = new Size(1272, 678);
+            flpRestaurants.Padding = new Padding(25, 20, 25, 20);
             flpRestaurants.TabIndex = 0;
-=======
-            button1.Location = new Point(393, 79);
-            button1.Name = "button1";
-            button1.Size = new Size(474, 197);
-            button1.TabIndex = 0;
-            button1.Text = "ร้าน 1";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += btnRestaurant1_Click;
->>>>>>> 3b511a8f186b3fd1172301f2fbdc94c361aa531c
-            // 
-            // labelHeader
-            // 
-<<<<<<< HEAD
-            labelHeader.BackColor = Color.FromArgb(46, 204, 113);
-            labelHeader.Dock = DockStyle.Top;
-            labelHeader.Font = new Font("Segoe UI", 20F, FontStyle.Bold);
-            labelHeader.ForeColor = Color.White;
-            labelHeader.Location = new Point(0, 0);
-            labelHeader.Name = "labelHeader";
-            labelHeader.Size = new Size(1272, 80);
-            labelHeader.TabIndex = 1;
-            labelHeader.Text = "  เลือกร้านอาหารขวัญใจคุณ";
-            labelHeader.TextAlign = ContentAlignment.MiddleLeft;
-=======
-            button2.Location = new Point(393, 389);
-            button2.Name = "button2";
-            button2.Size = new Size(474, 197);
-            button2.TabIndex = 1;
-            button2.Text = "ร้าน 2";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += btnRestaurant2_Click;
->>>>>>> 3b511a8f186b3fd1172301f2fbdc94c361aa531c
-            // 
-            // CustomerForm
-            // 
+
+            // === Form ===
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.White;
-            ClientSize = new Size(1272, 758);
+            BackColor = Color.FromArgb(245, 248, 250);
+            ClientSize = new Size(1280, 760);
             Controls.Add(flpRestaurants);
-            Controls.Add(labelHeader);
+            Controls.Add(panelSearch);
+            Controls.Add(panelTopBar);
             Name = "CustomerForm";
-            Text = "Delivery App - Home";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Delivery App — เลือกร้านอาหาร";
+
+            panelTopBar.ResumeLayout(false);
+            panelTopBar.PerformLayout();
+            panelSearch.ResumeLayout(false);
+            panelSearch.PerformLayout();
             ResumeLayout(false);
         }
 
         #endregion
 
+        private Panel panelTopBar;
+        private Label lblAppTitle;
+        private Label lblGreeting;
+        private Panel panelSearch;
+        private Label lblSearchIcon;
+        private Label lblSubheader;
         private FlowLayoutPanel flpRestaurants;
-        private Label labelHeader;
     }
 }
