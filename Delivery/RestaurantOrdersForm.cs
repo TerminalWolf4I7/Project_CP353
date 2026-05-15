@@ -65,7 +65,7 @@ namespace Delivery
                 {
                     conn.Open();
 
-                    string ordersQuery = "SELECT order_id, status FROM orders WHERE restaurant_id = @restaurant_id AND (status = 'wait_restaurant' OR status = 'cooking') ORDER BY order_id";
+                    string ordersQuery = "SELECT order_id, status FROM orders WHERE restaurant_id = @restaurant_id AND (status = 'Pending' OR status = 'Cooking') ORDER BY order_id";
 
                     using (NpgsqlDataAdapter adapter = new NpgsqlDataAdapter(ordersQuery, conn))
                     {
@@ -103,12 +103,12 @@ namespace Delivery
             DataGridViewRow row = dataGridOrders.SelectedRows[0];
             string status = row.Cells["status"].Value?.ToString() ?? string.Empty;
 
-            if (status == "wait_restaurant")
+            if (status == "Pending")
             {
                 buttonAccept.Visible = true;
                 buttonDecline.Visible = true;
             }
-            else if (status == "cooking")
+            else if (status == "Cooking")
             {
                 buttonFinishCooking.Visible = true;
             }
@@ -116,17 +116,86 @@ namespace Delivery
 
         private void ButtonAccept_Click(object? sender, EventArgs e)
         {
-            UpdateOrderStatus("wait_restaurant", "cooking");
+            UpdateOrderStatus("Pending", "Cooking");
         }
 
         private void ButtonDecline_Click(object? sender, EventArgs e)
         {
-            UpdateOrderStatus("wait_restaurant", "declined");
+            DeleteOrder("Pending");
         }
 
         private void ButtonFinishCooking_Click(object? sender, EventArgs e)
         {
-            UpdateOrderStatus("cooking", "delivering");
+            UpdateOrderStatus("Cooking", "Delivering");
+        }
+
+        private void DeleteOrder(string expectedStatus)
+        {
+            if (dataGridOrders.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Select an order.");
+                return;
+            }
+
+            DataGridViewRow row = dataGridOrders.SelectedRows[0];
+            object? orderIdValue = row.Cells["order_id"].Value;
+            string currentStatus = row.Cells["status"].Value?.ToString() ?? string.Empty;
+
+            if (orderIdValue == null || orderIdValue == DBNull.Value)
+            {
+                MessageBox.Show("Order not found.");
+                return;
+            }
+
+            if (!string.Equals(currentStatus, expectedStatus, StringComparison.OrdinalIgnoreCase))
+            {
+                LoadOrders();
+                return;
+            }
+
+            try
+            {
+                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
+                {
+                    conn.Open();
+
+                    using (var trans = conn.BeginTransaction())
+                    {
+                        string deleteItemsQuery = "DELETE FROM order_items WHERE order_id = @order_id";
+
+                        using (NpgsqlCommand cmd = new NpgsqlCommand(deleteItemsQuery, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@order_id", Convert.ToInt32(orderIdValue));
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        string deleteOrderQuery = "DELETE FROM orders WHERE order_id = @order_id AND status = @current_status";
+
+                        using (NpgsqlCommand cmd = new NpgsqlCommand(deleteOrderQuery, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@order_id", Convert.ToInt32(orderIdValue));
+                            cmd.Parameters.AddWithValue("@current_status", expectedStatus);
+
+                            int affectedRows = cmd.ExecuteNonQuery();
+
+                            if (affectedRows == 0)
+                            {
+                                trans.Rollback();
+                                MessageBox.Show("No orders were deleted.");
+                                return;
+                            }
+                        }
+
+                        trans.Commit();
+                    }
+                }
+
+                LoadOrders();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void UpdateOrderStatus(string expectedStatus, string newStatus)
