@@ -31,6 +31,7 @@
             label1 = new Label();
             button1 = new Button();
             button2 = new Button();
+            buttonLogout = new Button();
             SuspendLayout();
             // 
             // label1
@@ -60,11 +61,21 @@
             button2.Text = "edit";
             button2.UseVisualStyleBackColor = true;
             // 
+            // buttonLogout
+            // 
+            buttonLogout.Location = new Point(362, 516);
+            buttonLogout.Name = "buttonLogout";
+            buttonLogout.Size = new Size(489, 80);
+            buttonLogout.TabIndex = 3;
+            buttonLogout.Text = "Logout";
+            buttonLogout.UseVisualStyleBackColor = true;
+            // 
             // RestaurantForm
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1239, 772);
+            Controls.Add(buttonLogout);
             Controls.Add(button2);
             Controls.Add(button1);
             Controls.Add(label1);
@@ -79,5 +90,6 @@
         private Label label1;
         private Button button1;
         private Button button2;
+        private Button buttonLogout;
     }
 }

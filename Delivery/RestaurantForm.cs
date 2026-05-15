@@ -16,6 +16,7 @@ namespace Delivery
             Load += RestaurantForm_Load;
             button1.Click += ButtonOrders_Click;
             button2.Click += ButtonEdit_Click;
+            buttonLogout.Click += BtnLogout_Click;
         }
 
         private void RestaurantForm_Load(object? sender, EventArgs e)
@@ -57,6 +58,16 @@ namespace Delivery
             RestaurantOrdersForm ordersForm = new RestaurantOrdersForm(userId);
             ordersForm.ShowDialog(this);
         }
-    }
 
+        private void BtnLogout_Click(object? sender, EventArgs e)
+        {
+            var result = MessageBox.Show("คุณต้องการออกจากระบบใช่หรือไม่?", "ยืนยันการออกจากระบบ", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+            {
+                Login loginForm = new Login();
+                loginForm.Show();
+                Close();
+            }
+        }
+    }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Windows.Forms;
 using Npgsql;
 
@@ -58,9 +59,15 @@ namespace Delivery
                         }
 
                         MessageBox.Show("Login Success");
-                        
-                        // เพิ่ม Event Exit ตามแบบเพื่อน
-                        nextForm.FormClosed += (s, args) => Application.Exit();
+
+                        nextForm.FormClosed += (s, args) =>
+                        {
+                            if (!Application.OpenForms.OfType<Login>().Any())
+                            {
+                                Application.Exit();
+                            }
+                        };
+
                         nextForm.Show();
                         this.Hide();
                     }
