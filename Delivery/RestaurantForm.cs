@@ -14,6 +14,7 @@ namespace Delivery
             this.userId = userId;
 
             Load += RestaurantForm_Load;
+            button1.Click += ButtonOrders_Click;
             button2.Click += ButtonEdit_Click;
         }
 
@@ -49,6 +50,12 @@ namespace Delivery
         {
             RestaurantEditForm editForm = new RestaurantEditForm(userId);
             editForm.ShowDialog(this);
+        }
+
+        private void ButtonOrders_Click(object? sender, EventArgs e)
+        {
+            RestaurantOrdersForm ordersForm = new RestaurantOrdersForm(userId);
+            ordersForm.ShowDialog(this);
         }
     }
 

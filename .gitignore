@@ -46,3 +46,10 @@ ehthumbs.db
 *.bak
 *.swp
 *.tmp
+/Delivery/bin/Debug/net8.0-windows/Delivery.dll
+/Delivery/bin/Debug/net8.0-windows/Delivery.exe
+/Delivery/bin/Debug/net8.0-windows/Delivery.pdb
+/Delivery/obj/Debug/net8.0-windows/ref/Delivery.dll
+/Delivery/obj/Debug/net8.0-windows/refint/Delivery.dll
+/Delivery/obj/Debug/net8.0-windows/Delivery.dll
+/Delivery/obj/Debug/net8.0-windows/Delivery.pdb

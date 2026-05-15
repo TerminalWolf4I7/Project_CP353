@@ -15,9 +15,7 @@ namespace Delivery
         {
             try
             {
-                int userId;
-
-                if (!int.TryParse(txtUserId.Text, out userId))
+                if (!int.TryParse(txtUserId.Text, out int userId))
                 {
                     MessageBox.Show("Please enter number only");
                     return;
@@ -35,6 +33,7 @@ namespace Delivery
 
                         object result = cmd.ExecuteScalar();
 
+<<<<<<< HEAD
                         if (result != null)
                         {
                             string role = result.ToString();
@@ -65,9 +64,35 @@ namespace Delivery
                             this.Hide();
                         }
                         else
+=======
+                        if (result == null)
+>>>>>>> 3b511a8f186b3fd1172301f2fbdc94c361aa531c
                         {
                             MessageBox.Show("User ID not found");
+                            return;
                         }
+
+                        string role = result.ToString();
+
+                        Form nextForm = null;
+
+                        if (role == "Customer")
+                            nextForm = new CustomerForm();
+                        else if (role == "Restaurant")
+                            nextForm = new RestaurantForm(userId);
+                        else if (role == "Rider")
+                            nextForm = new RiderForm();
+                        else
+                        {
+                            MessageBox.Show("Unknown role: " + role);
+                            return;
+                        }
+
+                        MessageBox.Show("Login Success");
+
+                        nextForm.FormClosed += (s, args) => Application.Exit();
+                        nextForm.Show();
+                        this.Hide();
                     }
                 }
             }
