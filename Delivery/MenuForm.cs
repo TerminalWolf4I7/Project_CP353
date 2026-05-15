@@ -62,21 +62,34 @@ namespace Delivery
                                 Label lblDesc = new Label { Text = desc, Font = new Font("Segoe UI", 9), Location = new Point(10, 75), Size = new Size(200, 120) };
                                 
                                 Button btnAdd = new Button { 
-                                    Text = "เพิ่มลงตะกร้า +", 
+                                    Text = "เพิ่ม (+)", 
                                     BackColor = Color.FromArgb(46, 204, 113), 
                                     ForeColor = Color.White, 
                                     FlatStyle = FlatStyle.Flat,
                                     Font = new Font("Segoe UI", 9, FontStyle.Bold),
                                     Location = new Point(10, 220), 
-                                    Size = new Size(200, 45),
+                                    Size = new Size(95, 45),
                                     Tag = id 
                                 };
                                 btnAdd.Click += BtnAddToCart_Click;
+
+                                Button btnRemove = new Button { 
+                                    Text = "ลด (-)", 
+                                    BackColor = Color.FromArgb(231, 76, 60), 
+                                    ForeColor = Color.White, 
+                                    FlatStyle = FlatStyle.Flat,
+                                    Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                                    Location = new Point(115, 220), 
+                                    Size = new Size(95, 45),
+                                    Tag = id 
+                                };
+                                btnRemove.Click += BtnRemoveFromCart_Click;
 
                                 card.Controls.Add(lblName);
                                 card.Controls.Add(lblPrice);
                                 card.Controls.Add(lblDesc);
                                 card.Controls.Add(btnAdd);
+                                card.Controls.Add(btnRemove);
                                 flpMenu.Controls.Add(card);
                             }
                         }
@@ -99,6 +112,16 @@ namespace Delivery
             }
         }
 
+        private void BtnRemoveFromCart_Click(object? sender, EventArgs e)
+        {
+            if (sender is Button btn)
+            {
+                int itemId = (int)btn.Tag;
+                RemoveFromCart(itemId);
+                UpdateTotal();
+            }
+        }
+
         private void AddToCart(int itemId)
         {
             try
@@ -106,21 +129,25 @@ namespace Delivery
                 using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
                 {
                     conn.Open();
-                    string simpleFindCart = "SELECT cart_id FROM carts WHERE user_id = @uid ORDER BY created_at DESC LIMIT 1";
+                    // หา Cart ของ User ในร้านนี้โดยเฉพาะ (กรอง restaurant_id ด้วย)
+                    string simpleFindCart = "SELECT cart_id FROM carts WHERE user_id = @uid AND restaurant_id = @rid ORDER BY created_at DESC LIMIT 1";
                     int cartId = 0;
                     using (var cmd = new NpgsqlCommand(simpleFindCart, conn))
                     {
                         cmd.Parameters.AddWithValue("@uid", this.userId);
+                        cmd.Parameters.AddWithValue("@rid", this.restaurantId);
                         var result = cmd.ExecuteScalar();
                         if (result != null) cartId = (int)result;
                     }
 
                     if (cartId == 0)
                     {
-                        string createCart = "INSERT INTO carts (user_id) VALUES (@uid) RETURNING cart_id";
+                        // สร้าง Cart ใหม่ พร้อม restaurant_id (NOT NULL ตาม Schema ใหม่)
+                        string createCart = "INSERT INTO carts (user_id, restaurant_id) VALUES (@uid, @rid) RETURNING cart_id";
                         using (var cmd = new NpgsqlCommand(createCart, conn))
                         {
                             cmd.Parameters.AddWithValue("@uid", this.userId);
+                            cmd.Parameters.AddWithValue("@rid", this.restaurantId);
                             cartId = (int)cmd.ExecuteScalar();
                         }
                     }
@@ -170,6 +197,72 @@ namespace Delivery
             }
         }
 
+        private void RemoveFromCart(int itemId)
+        {
+            try
+            {
+                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
+                {
+                    conn.Open();
+                    string simpleFindCart = "SELECT cart_id FROM carts WHERE user_id = @uid AND restaurant_id = @rid ORDER BY created_at DESC LIMIT 1";
+                    int cartId = 0;
+                    using (var cmd = new NpgsqlCommand(simpleFindCart, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@uid", this.userId);
+                        cmd.Parameters.AddWithValue("@rid", this.restaurantId);
+                        var result = cmd.ExecuteScalar();
+                        if (result != null) cartId = (int)result;
+                    }
+
+                    if (cartId == 0) return; // ไม่มีตะกร้า
+
+                    string checkItem = "SELECT cart_item_id, quantity FROM cart_items WHERE cart_id = @cid AND item_id = @iid";
+                    int cartItemId = 0;
+                    int currentQty = 0;
+                    using (var cmd = new NpgsqlCommand(checkItem, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@cid", cartId);
+                        cmd.Parameters.AddWithValue("@iid", itemId);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                cartItemId = reader.GetInt32(0);
+                                currentQty = reader.GetInt32(1);
+                            }
+                        }
+                    }
+
+                    if (cartItemId > 0)
+                    {
+                        if (currentQty > 1)
+                        {
+                            string updateQty = "UPDATE cart_items SET quantity = @qty WHERE cart_item_id = @ciid";
+                            using (var cmd = new NpgsqlCommand(updateQty, conn))
+                            {
+                                cmd.Parameters.AddWithValue("@qty", currentQty - 1);
+                                cmd.Parameters.AddWithValue("@ciid", cartItemId);
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                        else
+                        {
+                            string deleteItem = "DELETE FROM cart_items WHERE cart_item_id = @ciid";
+                            using (var cmd = new NpgsqlCommand(deleteItem, conn))
+                            {
+                                cmd.Parameters.AddWithValue("@ciid", cartItemId);
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error removing item: " + ex.Message);
+            }
+        }
+
         private void UpdateTotal()
         {
             try
@@ -177,16 +270,19 @@ namespace Delivery
                 using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
                 {
                     conn.Open();
+                    // กรอง Cart ตาม user_id และ restaurant_id ด้วย
                     string query = @"
                         SELECT SUM(ci.quantity * mi.price) 
                         FROM cart_items ci 
                         JOIN menu_items mi ON ci.item_id = mi.item_id 
                         JOIN carts c ON ci.cart_id = c.cart_id 
-                        WHERE c.user_id = @uid AND c.cart_id = (SELECT cart_id FROM carts WHERE user_id = @uid ORDER BY created_at DESC LIMIT 1)";
+                        WHERE c.user_id = @uid AND c.restaurant_id = @rid
+                          AND c.cart_id = (SELECT cart_id FROM carts WHERE user_id = @uid AND restaurant_id = @rid ORDER BY created_at DESC LIMIT 1)";
                     
                     using (var cmd = new NpgsqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@uid", this.userId);
+                        cmd.Parameters.AddWithValue("@rid", this.restaurantId);
                         var result = cmd.ExecuteScalar();
                         decimal total = (result == DBNull.Value) ? 0 : Convert.ToDecimal(result);
                         lblTotal.Text = $"ราคารวม: {total.ToString("N2")} บาท";
@@ -205,11 +301,13 @@ namespace Delivery
                     conn.Open();
                     using (var trans = conn.BeginTransaction())
                     {
-                        string getCart = "SELECT cart_id FROM carts WHERE user_id = @uid ORDER BY created_at DESC LIMIT 1";
+                        // หา Cart ของร้านนี้โดยเฉพาะ
+                        string getCart = "SELECT cart_id FROM carts WHERE user_id = @uid AND restaurant_id = @rid ORDER BY created_at DESC LIMIT 1";
                         int cartId;
                         using (var cmd = new NpgsqlCommand(getCart, conn))
                         {
                             cmd.Parameters.AddWithValue("@uid", this.userId);
+                            cmd.Parameters.AddWithValue("@rid", this.restaurantId);
                             var result = cmd.ExecuteScalar();
                             if (result == null) return;
                             cartId = (int)result;
@@ -261,16 +359,29 @@ namespace Delivery
                             }
                         }
 
-                        string newCart = "INSERT INTO carts (user_id) VALUES (@uid)";
-                        using (var cmd = new NpgsqlCommand(newCart, conn))
+                        // 1. ลบของในตะกร้าเก่า
+                        string deleteCartItems = "DELETE FROM cart_items WHERE cart_id = @cid";
+                        using (var cmd = new NpgsqlCommand(deleteCartItems, conn))
                         {
-                            cmd.Parameters.AddWithValue("@uid", this.userId);
+                            cmd.Parameters.AddWithValue("@cid", cartId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // 2. ลบตัวตะกร้าเก่าทิ้งไปด้วยเลย (ไม่ต้องสร้างใหม่ค้างไว้)
+                        string deleteCart = "DELETE FROM carts WHERE cart_id = @cid";
+                        using (var cmd = new NpgsqlCommand(deleteCart, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@cid", cartId);
                             cmd.ExecuteNonQuery();
                         }
 
                         trans.Commit();
-                        MessageBox.Show($"สั่งซื้อสำเร็จ! เลขที่ใบสั่งซื้อของคุณคือ: {orderId}\nสถานะ: Pending (รอร้านค้ายืนยัน)");
-                        this.Close();
+                        MessageBox.Show($"สั่งซื้อสำเร็จ! เลขที่ใบสั่งซื้อของคุณคือ: {orderId}");
+                        
+                        // เปิดหน้า OrderStatus แทนการปิดแอป
+                        OrderStatusForm statusForm = new OrderStatusForm(this.restaurantName, this.userId);
+                        statusForm.Show();
+                        this.Hide();
                     }
                 }
             }

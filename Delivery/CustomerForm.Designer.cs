@@ -24,6 +24,7 @@ namespace Delivery
             panelSearch = new Panel();
             lblSearchIcon = new Label();
             flpRestaurants = new FlowLayoutPanel();
+            btnLogout = new Button();  // << เพิ่มตรงนี้
             panelTopBar.SuspendLayout();
             panelSearch.SuspendLayout();
             SuspendLayout();
@@ -34,6 +35,18 @@ namespace Delivery
             panelTopBar.Size = new Size(1280, 130);
             panelTopBar.Controls.Add(lblAppTitle);
             panelTopBar.Controls.Add(lblGreeting);
+            panelTopBar.Controls.Add(btnLogout);
+
+            // btnLogout
+            btnLogout.Text = "ออกจากระบบ";
+            btnLogout.BackColor = Color.White;
+            btnLogout.ForeColor = Color.FromArgb(231, 76, 60);
+            btnLogout.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnLogout.FlatStyle = FlatStyle.Flat;
+            btnLogout.Location = new Point(1100, 45);
+            btnLogout.Size = new Size(140, 40);
+            btnLogout.Cursor = Cursors.Hand;
+            btnLogout.Click += BtnLogout_Click;
 
             // lblAppTitle
             lblAppTitle.Text = "🛵  DELIVERY";
@@ -109,5 +122,6 @@ namespace Delivery
         private Label lblSearchIcon;
         private Label lblSubheader;
         private FlowLayoutPanel flpRestaurants;
+        private Button btnLogout;
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using Npgsql;
 
 namespace Delivery
 {
@@ -11,11 +12,11 @@ namespace Delivery
         private List<string> cartItems;
         private Form menuForm;
         private string restaurantName;
-        private int userId; // เพิ่ม userId
+        private int userId;
         private FlowLayoutPanel itemPanel;
         private Label totalLabel;
 
-        public CartForm(List<string> items, Form previousMenuForm, string restaurant, int userId) // เพิ่ม userId ใน constructor
+        public CartForm(List<string> items, Form previousMenuForm, string restaurant, int userId)
         {
             InitializeComponent();
 
@@ -219,11 +220,49 @@ namespace Delivery
                 return;
             }
 
-            MessageBox.Show("สั่งซื้อสำเร็จ");
+            try
+            {
+                using (var conn = new NpgsqlConnection(Database.connectionString))
+                {
+                    conn.Open();
+                    // 1. หา Cart ID ปัจจุบัน
+                    string getCart = "SELECT cart_id FROM carts WHERE user_id = @uid ORDER BY created_at DESC LIMIT 1";
+                    int cartId = 0;
+                    using (var cmd = new NpgsqlCommand(getCart, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@uid", this.userId);
+                        var result = cmd.ExecuteScalar();
+                        if (result != null) cartId = (int)result;
+                    }
 
+                    if (cartId > 0)
+                    {
+                        // 2. ลบของในตะกร้าใน DB ทิ้ง
+                        string deleteItems = "DELETE FROM cart_items WHERE cart_id = @cid";
+                        using (var cmd = new NpgsqlCommand(deleteItems, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@cid", cartId);
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // 3. ลบตัวตะกร้าเก่าทิ้งไปด้วยเลย (จะได้ไม่ซ้ำซ้อน)
+                        string deleteCart = "DELETE FROM carts WHERE cart_id = @cid";
+                        using (var cmd = new NpgsqlCommand(deleteCart, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@cid", cartId);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Database Error: " + ex.Message);
+            }
+
+            MessageBox.Show("สั่งซื้อสำเร็จ!");
             cartItems.Clear();
 
-            // ส่ง userId ไปที่ OrderStatusForm
             OrderStatusForm statusForm = new OrderStatusForm(restaurantName, userId);
             statusForm.Show();
 
