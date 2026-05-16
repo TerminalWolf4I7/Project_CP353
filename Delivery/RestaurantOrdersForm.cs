@@ -1,7 +1,10 @@
 using System;
 using System.Data;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Npgsql;
 
 namespace Delivery
 {
@@ -10,6 +13,7 @@ namespace Delivery
         private readonly int userId;
         private int restaurantId;
         private DataTable ordersTable = new DataTable();
+        private readonly HttpClient httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:5000/api/") };
 
         public RestaurantOrdersForm(int userId)
         {
@@ -23,33 +27,22 @@ namespace Delivery
             buttonFinishCooking.Click += ButtonFinishCooking_Click;
         }
 
-        private void RestaurantOrdersForm_Load(object? sender, EventArgs e)
+        private async void RestaurantOrdersForm_Load(object? sender, EventArgs e)
         {
             try
             {
-                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
+                var restaurant = await httpClient.GetFromJsonAsync<Delivery.Api.Models.RestaurantDto>(
+                    $"restaurants/by-user/{userId}");
+
+                if (restaurant == null)
                 {
-                    conn.Open();
-
-                    string restaurantQuery = "SELECT restaurant_id FROM restaurants WHERE user_id = @user_id";
-
-                    using (NpgsqlCommand cmd = new NpgsqlCommand(restaurantQuery, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@user_id", userId);
-                        object? result = cmd.ExecuteScalar();
-
-                        if (result == null || result == DBNull.Value)
-                        {
-                            MessageBox.Show("Restaurant not found for this user.");
-                            Close();
-                            return;
-                        }
-
-                        restaurantId = Convert.ToInt32(result);
-                    }
+                    MessageBox.Show("Restaurant not found for this user.");
+                    Close();
+                    return;
                 }
 
-                LoadOrders();
+                restaurantId = restaurant.RestaurantId;
+                await LoadOrdersAsync();
             }
             catch (Exception ex)
             {
@@ -57,21 +50,24 @@ namespace Delivery
             }
         }
 
-        private void LoadOrders()
+        private async Task LoadOrdersAsync()
         {
             try
             {
-                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
+                var orders = await httpClient.GetFromJsonAsync<List<Delivery.Api.Models.OrderDto>>(
+                    $"orders?restaurantId={restaurantId}");
+
+                ordersTable = new DataTable();
+                ordersTable.Columns.Add("order_id", typeof(int));
+                ordersTable.Columns.Add("status", typeof(string));
+
+                if (orders != null)
                 {
-                    conn.Open();
-
-                    string ordersQuery = "SELECT order_id, status FROM orders WHERE restaurant_id = @restaurant_id AND (status = 'Pending' OR status = 'Cooking') ORDER BY order_id";
-
-                    using (NpgsqlDataAdapter adapter = new NpgsqlDataAdapter(ordersQuery, conn))
+                    foreach (var order in orders
+                        .Where(o => o.Status == "Pending" || o.Status == "Cooking")
+                        .OrderBy(o => o.OrderId))
                     {
-                        adapter.SelectCommand.Parameters.AddWithValue("@restaurant_id", restaurantId);
-                        ordersTable = new DataTable();
-                        adapter.Fill(ordersTable);
+                        ordersTable.Rows.Add(order.OrderId, order.Status);
                     }
                 }
 
@@ -116,20 +112,20 @@ namespace Delivery
 
         private void ButtonAccept_Click(object? sender, EventArgs e)
         {
-            UpdateOrderStatus("Pending", "Cooking");
+            _ = UpdateOrderStatusAsync("Pending", "Cooking");
         }
 
         private void ButtonDecline_Click(object? sender, EventArgs e)
         {
-            DeleteOrder("Pending");
+            _ = DeleteOrderAsync("Pending");
         }
 
         private void ButtonFinishCooking_Click(object? sender, EventArgs e)
         {
-            UpdateOrderStatus("Cooking", "Waiting for rider");
+            _ = UpdateOrderStatusAsync("Cooking", "Waiting for rider");
         }
 
-        private void DeleteOrder(string expectedStatus)
+        private async Task DeleteOrderAsync(string expectedStatus)
         {
             if (dataGridOrders.SelectedRows.Count == 0)
             {
@@ -149,48 +145,16 @@ namespace Delivery
 
             if (!string.Equals(currentStatus, expectedStatus, StringComparison.OrdinalIgnoreCase))
             {
-                LoadOrders();
+                await LoadOrdersAsync();
                 return;
             }
 
             try
             {
-                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
-                {
-                    conn.Open();
+                var response = await httpClient.DeleteAsync($"orders/{Convert.ToInt32(orderIdValue)}");
+                response.EnsureSuccessStatusCode();
 
-                    using (var trans = conn.BeginTransaction())
-                    {
-                        string deleteItemsQuery = "DELETE FROM order_items WHERE order_id = @order_id";
-
-                        using (NpgsqlCommand cmd = new NpgsqlCommand(deleteItemsQuery, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@order_id", Convert.ToInt32(orderIdValue));
-                            cmd.ExecuteNonQuery();
-                        }
-
-                        string deleteOrderQuery = "DELETE FROM orders WHERE order_id = @order_id AND status = @current_status";
-
-                        using (NpgsqlCommand cmd = new NpgsqlCommand(deleteOrderQuery, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@order_id", Convert.ToInt32(orderIdValue));
-                            cmd.Parameters.AddWithValue("@current_status", expectedStatus);
-
-                            int affectedRows = cmd.ExecuteNonQuery();
-
-                            if (affectedRows == 0)
-                            {
-                                trans.Rollback();
-                                MessageBox.Show("No orders were deleted.");
-                                return;
-                            }
-                        }
-
-                        trans.Commit();
-                    }
-                }
-
-                LoadOrders();
+                await LoadOrdersAsync();
             }
             catch (Exception ex)
             {
@@ -198,7 +162,7 @@ namespace Delivery
             }
         }
 
-        private void UpdateOrderStatus(string expectedStatus, string newStatus)
+        private async Task UpdateOrderStatusAsync(string expectedStatus, string newStatus)
         {
             if (dataGridOrders.SelectedRows.Count == 0)
             {
@@ -218,39 +182,30 @@ namespace Delivery
 
             if (!string.Equals(currentStatus, expectedStatus, StringComparison.OrdinalIgnoreCase))
             {
-                LoadOrders();
+                await LoadOrdersAsync();
                 return;
             }
 
             try
             {
-                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
-                {
-                    conn.Open();
+                var payload = new Delivery.Api.Models.UpdateStatusRequest(newStatus);
+                var response = await httpClient.PatchAsJsonAsync(
+                    $"orders/{Convert.ToInt32(orderIdValue)}/status",
+                    payload);
+                response.EnsureSuccessStatusCode();
 
-                    string updateQuery = "UPDATE orders SET status = @new_status WHERE order_id = @order_id AND status = @current_status";
-
-                    using (NpgsqlCommand cmd = new NpgsqlCommand(updateQuery, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@new_status", newStatus);
-                        cmd.Parameters.AddWithValue("@order_id", Convert.ToInt32(orderIdValue));
-                        cmd.Parameters.AddWithValue("@current_status", expectedStatus);
-
-                        int affectedRows = cmd.ExecuteNonQuery();
-
-                        if (affectedRows == 0)
-                        {
-                            MessageBox.Show("No orders were updated.");
-                        }
-                    }
-                }
-
-                LoadOrders();
+                await LoadOrdersAsync();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            httpClient.Dispose();
+            base.OnFormClosed(e);
         }
     }
 }

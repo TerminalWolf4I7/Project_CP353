@@ -1,5 +1,9 @@
 using System;
 using System.Drawing;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Delivery
@@ -15,6 +19,7 @@ namespace Delivery
         private ProgressBar progressBar;
         private System.Windows.Forms.Timer statusTimer;
         private int currentStep = 0;
+        private readonly HttpClient httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:5000/api/") };
 
         private string[] steps =
         {
@@ -25,16 +30,16 @@ namespace Delivery
             "จัดส่งสำเร็จ"
         };
 
-        public OrderStatusForm(string restaurant, int userId) // เพิ่ม userId ใน constructor
+        public OrderStatusForm(string restaurant, int userId, int orderId) // เพิ่ม userId ใน constructor
         {
             InitializeComponent();
 
             this.restaurantName = restaurant;
             this.userId = userId;
-            this.orderId = new Random().Next(1000, 9999);
+            this.orderId = orderId;
 
             SetupUI();
-            StartStatusSimulation();
+            StartStatusPolling();
         }
 
         private void SetupUI()
@@ -128,28 +133,87 @@ namespace Delivery
             mainPanel.Controls.Add(customerButton);
         }
 
-        private void StartStatusSimulation()
+        private void StartStatusPolling()
         {
             statusTimer = new System.Windows.Forms.Timer();
-            statusTimer.Interval = 2500;
+            statusTimer.Interval = 3000;
             statusTimer.Tick += StatusTimer_Tick;
             statusTimer.Start();
+            _ = RefreshStatusAsync();
         }
 
         private void StatusTimer_Tick(object sender, EventArgs e)
         {
-            if (currentStep < steps.Length - 1)
-            {
-                currentStep++;
-                detailLabel.Text = steps[currentStep];
-                progressBar.Value = currentStep;
+            _ = RefreshStatusAsync();
+        }
 
-                if (currentStep == steps.Length - 1)
+        private async Task RefreshStatusAsync()
+        {
+            try
+            {
+                var response = await httpClient.GetAsync($"orders/{orderId}/details");
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
                 {
-                    statusLabel.Text = "Status: เสร็จสิ้น";
+                    ShowCompletedStatus();
+                    return;
+                }
+
+                response.EnsureSuccessStatusCode();
+
+                var details = await response.Content.ReadFromJsonAsync<Delivery.Api.Models.OrderDetailDto>();
+                if (details == null)
+                {
+                    return;
+                }
+
+                UpdateStatusDisplay(details.Status);
+            }
+            catch
+            {
+            }
+        }
+
+        private void UpdateStatusDisplay(string status)
+        {
+            statusLabel.Text = $"Status: {status}";
+
+            int stepIndex = status switch
+            {
+                "Pending" => 0,
+                "Cooking" => 1,
+                "Waiting for rider" => 2,
+                "Delivering" => 3,
+                "Completed" => 4,
+                "Delivered" => 4,
+                "Success" => 4,
+                _ => -1
+            };
+
+            if (stepIndex >= 0)
+            {
+                currentStep = stepIndex;
+                detailLabel.Text = steps[stepIndex];
+                progressBar.Value = stepIndex;
+
+                if (stepIndex == steps.Length - 1)
+                {
                     statusTimer.Stop();
                 }
             }
+            else
+            {
+                detailLabel.Text = status;
+            }
+        }
+
+        private void ShowCompletedStatus()
+        {
+            currentStep = steps.Length - 1;
+            statusLabel.Text = "Status: เสร็จสิ้น";
+            detailLabel.Text = steps[currentStep];
+            progressBar.Value = currentStep;
+            statusTimer.Stop();
         }
 
         private void CustomerButton_Click(object sender, EventArgs e)
@@ -158,6 +222,13 @@ namespace Delivery
             CustomerForm customerForm = new CustomerForm(userId);
             customerForm.Show();
             this.Close();
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            statusTimer?.Stop();
+            httpClient.Dispose();
+            base.OnFormClosed(e);
         }
     }
 }

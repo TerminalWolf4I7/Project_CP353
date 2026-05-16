@@ -25,6 +25,7 @@ namespace Delivery
             lblSearchIcon = new Label();
             flpRestaurants = new FlowLayoutPanel();
             btnLogout = new Button();  // << เพิ่มตรงนี้
+            btnOrderStatus = new Button();
             panelTopBar.SuspendLayout();
             panelSearch.SuspendLayout();
             SuspendLayout();
@@ -35,6 +36,7 @@ namespace Delivery
             panelTopBar.Size = new Size(1280, 130);
             panelTopBar.Controls.Add(lblAppTitle);
             panelTopBar.Controls.Add(lblGreeting);
+            panelTopBar.Controls.Add(btnOrderStatus);
             panelTopBar.Controls.Add(btnLogout);
 
             // btnLogout
@@ -47,6 +49,17 @@ namespace Delivery
             btnLogout.Size = new Size(140, 40);
             btnLogout.Cursor = Cursors.Hand;
             btnLogout.Click += BtnLogout_Click;
+
+            // btnOrderStatus
+            btnOrderStatus.Text = "สถานะออเดอร์";
+            btnOrderStatus.BackColor = Color.White;
+            btnOrderStatus.ForeColor = Color.FromArgb(39, 174, 96);
+            btnOrderStatus.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnOrderStatus.FlatStyle = FlatStyle.Flat;
+            btnOrderStatus.Location = new Point(940, 45);
+            btnOrderStatus.Size = new Size(140, 40);
+            btnOrderStatus.Cursor = Cursors.Hand;
+            btnOrderStatus.Click += BtnOrderStatus_Click;
 
             // lblAppTitle
             lblAppTitle.Text = "🛵  DELIVERY";
@@ -123,5 +136,6 @@ namespace Delivery
         private Label lblSubheader;
         private FlowLayoutPanel flpRestaurants;
         private Button btnLogout;
+        private Button btnOrderStatus;
     }
 }

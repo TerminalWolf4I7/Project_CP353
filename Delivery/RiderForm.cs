@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Data;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Npgsql;
 
 namespace Delivery
 {
@@ -11,6 +13,7 @@ namespace Delivery
         private readonly int _userId;
 
         private System.Windows.Forms.Timer refreshTimer;
+        private readonly HttpClient httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:5000/api/") };
 
         public RiderForm(int userId)
         {
@@ -53,35 +56,12 @@ namespace Delivery
 
 
 
-        private void RiderForm_Load(
+        private async void RiderForm_Load(
             object sender,
             EventArgs e)
         {
-            LoadOrders();
-
-            CheckCurrentOrder();
-        }
-
-
-        private int GetRiderId(
-            NpgsqlConnection conn)
-        {
-            string sql = @"
-                SELECT rider_id
-                FROM riders
-                WHERE user_id=@id";
-
-            using var cmd =
-                new NpgsqlCommand(
-                    sql,
-                    conn);
-
-            cmd.Parameters.AddWithValue(
-                "@id",
-                _userId);
-
-            return Convert.ToInt32(
-                cmd.ExecuteScalar());
+            await LoadOrdersAsync();
+            await CheckCurrentOrderAsync();
         }
 
 
@@ -100,198 +80,28 @@ namespace Delivery
         }
 
 
-        private void LoadOrders()
+        private async Task LoadOrdersAsync()
         {
             try
             {
-                using var conn =
-                    new NpgsqlConnection(
-                        Database.connectionString);
+                var orders = await httpClient.GetFromJsonAsync<List<Delivery.Api.Models.OrderDto>>(
+                    "orders?status=Waiting%20for%20rider");
 
-                conn.Open();
+                DataTable dt = new DataTable();
+                dt.Columns.Add("order_id", typeof(int));
+                dt.Columns.Add("restaurant_id", typeof(int));
+                dt.Columns.Add("status", typeof(string));
+                dt.Columns.Add("rider_id", typeof(int));
 
-                string sql = @"
-            SELECT
-                order_id,
-                restaurant_id,
-                status,
-                COALESCE(rider_id,0) AS rider_id
-            FROM orders
-            WHERE status = 'Waiting for rider'
-            ORDER BY order_id";
-
-                using var da =
-                    new NpgsqlDataAdapter(
-                        sql,
-                        conn);
-
-                DataTable dt =
-                    new DataTable();
-
-                da.Fill(dt);
-
-                dataGridOrders.DataSource =
-                    dt;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    ex.Message);
-            }
-        }
-
-
-
-        private void CheckCurrentOrder()
-        {
-            using var conn =
-                new NpgsqlConnection(
-                    Database.connectionString);
-
-            conn.Open();
-
-
-            int riderId =
-                GetRiderId(conn);
-
-
-            string sql = @"
-                SELECT COUNT(*)
-                FROM orders
-                WHERE rider_id=@id
-                AND status='Delivering'";
-
-            using var cmd =
-                new NpgsqlCommand(
-                    sql,
-                    conn);
-
-            cmd.Parameters.AddWithValue(
-                "@id",
-                riderId);
-
-
-            long count =
-                Convert.ToInt64(
-                    cmd.ExecuteScalar());
-
-
-            buttonRiderOrder.Enabled =
-                count > 0;
-        }
-
-
-
-        private void ButtonViewDetails_Click(
-    object sender,
-    EventArgs e)
-        {
-            int orderId =
-                Convert.ToInt32(
-                    dataGridOrders.SelectedRows[0]
-                    .Cells["order_id"]
-                    .Value);
-
-            try
-            {
-                using var conn =
-                    new NpgsqlConnection(
-                        Database.connectionString);
-
-                conn.Open();
-
-
-                string orderSql = @"
-            SELECT
-                o.order_id,
-                u.name,
-                o.restaurant_id,
-                o.total_price,
-                o.status
-            FROM orders o
-            JOIN users u
-            ON o.user_id = u.user_id
-            WHERE o.order_id=@id";
-
-
-                using var orderCmd =
-                    new NpgsqlCommand(
-                        orderSql,
-                        conn);
-
-                orderCmd.Parameters.AddWithValue(
-                    "@id",
-                    orderId);
-
-
-                StringBuilder sb =
-                    new StringBuilder();
-
-
-                using (var reader =
-                    orderCmd.ExecuteReader())
+                if (orders != null)
                 {
-                    if (reader.Read())
+                    foreach (var order in orders.OrderBy(o => o.OrderId))
                     {
-                        sb.AppendLine(
-                            $"Order ID : {reader["order_id"]}");
-
-                        sb.AppendLine(
-                            $"Customer : {reader["name"]}");
-
-                        sb.AppendLine(
-                            $"Restaurant : {reader["restaurant_id"]}");
-
-                        sb.AppendLine(
-                            $"Status : {reader["status"]}");
-
-                        sb.AppendLine(
-                            $"Total : {reader["total_price"]}");
-
-                        sb.AppendLine();
-                        sb.AppendLine("Items:");
+                        dt.Rows.Add(order.OrderId, order.RestaurantId, order.Status, order.RiderId ?? 0);
                     }
                 }
 
-
-
-                string itemSql = @"
-            SELECT
-                m.name,
-                oi.quantity,
-                oi.price
-            FROM order_items oi
-            JOIN menu_items m
-            ON oi.item_id = m.item_id
-            WHERE oi.order_id=@id";
-
-
-                using var itemCmd =
-                    new NpgsqlCommand(
-                        itemSql,
-                        conn);
-
-                itemCmd.Parameters.AddWithValue(
-                    "@id",
-                    orderId);
-
-
-                using var itemReader =
-                    itemCmd.ExecuteReader();
-
-
-                while (itemReader.Read())
-                {
-                    sb.AppendLine(
-                        $"{itemReader["name"]} " +
-                        $"x {itemReader["quantity"]} " +
-                        $"({itemReader["price"]})");
-                }
-
-
-                MessageBox.Show(
-                    sb.ToString(),
-                    $"Order {orderId}");
+                dataGridOrders.DataSource = dt;
             }
             catch (Exception ex)
             {
@@ -302,9 +112,17 @@ namespace Delivery
 
 
 
-        private void ButtonAcceptOrder_Click(
-    object sender,
-    EventArgs e)
+        private async Task CheckCurrentOrderAsync()
+        {
+            var response = await httpClient.GetAsync($"riders/{_userId}/current-order");
+            buttonRiderOrder.Enabled = response.IsSuccessStatusCode;
+        }
+
+
+
+        private async void ButtonViewDetails_Click(
+            object sender,
+            EventArgs e)
         {
             int orderId =
                 Convert.ToInt32(
@@ -314,92 +132,73 @@ namespace Delivery
 
             try
             {
-                using var conn =
-                    new NpgsqlConnection(
-                        Database.connectionString);
+                var details = await httpClient.GetFromJsonAsync<Delivery.Api.Models.OrderDetailDto>(
+                    $"orders/{orderId}/details");
 
-                conn.Open();
-
-
-                int riderId =
-                    GetRiderId(conn);
-
-
-                using var tx =
-                    conn.BeginTransaction();
-
-
-                // รับ order ได้เฉพาะ order ที่ยังไม่มี rider
-                string orderSql = @"
-            UPDATE orders
-            SET rider_id=@rider,
-                status='Delivering'
-            WHERE order_id=@order
-            AND rider_id IS NULL";
-
-
-                using var orderCmd =
-                    new NpgsqlCommand(
-                        orderSql,
-                        conn,
-                        tx);
-
-                orderCmd.Parameters.AddWithValue(
-                    "@rider",
-                    riderId);
-
-                orderCmd.Parameters.AddWithValue(
-                    "@order",
-                    orderId);
-
-
-                int affected =
-                    orderCmd.ExecuteNonQuery();
-
-
-                // มีคนอื่นรับไปแล้ว
-                if (affected == 0)
+                if (details == null)
                 {
-                    tx.Rollback();
-
-                    MessageBox.Show(
-                        "Order นี้ถูกรับไปแล้ว");
-
-                    LoadOrders();
-
+                    MessageBox.Show("Order not found.");
                     return;
                 }
 
+                var items = await httpClient.GetFromJsonAsync<List<Delivery.Api.Models.OrderItemDto>>(
+                    $"orders/{orderId}");
 
-                string riderSql = @"
-            UPDATE riders
-            SET status='Delivering'
-            WHERE user_id=@id";
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine($"Order ID : {details.OrderId}");
+                sb.AppendLine($"Customer : {details.CustomerName}");
+                sb.AppendLine($"Restaurant : {details.RestaurantId}");
+                sb.AppendLine($"Status : {details.Status}");
+                sb.AppendLine($"Total : {details.TotalPrice}");
+                sb.AppendLine();
+                sb.AppendLine("Items:");
 
+                if (items != null)
+                {
+                    foreach (var item in items)
+                    {
+                        sb.AppendLine($"{item.Name} x {item.Quantity} ({item.Price})");
+                    }
+                }
 
-                using var riderCmd =
-                    new NpgsqlCommand(
-                        riderSql,
-                        conn,
-                        tx);
-
-                riderCmd.Parameters.AddWithValue(
-                    "@id",
-                    _userId);
-
-                riderCmd.ExecuteNonQuery();
-
-
-                tx.Commit();
-
-
+                MessageBox.Show(sb.ToString(), $"Order {orderId}");
+            }
+            catch (Exception ex)
+            {
                 MessageBox.Show(
-                    "Order accepted.");
+                    ex.Message);
+            }
+        }
 
 
-                LoadOrders();
 
-                CheckCurrentOrder();
+        private async void ButtonAcceptOrder_Click(
+            object sender,
+            EventArgs e)
+        {
+            int orderId =
+                Convert.ToInt32(
+                    dataGridOrders.SelectedRows[0]
+                    .Cells["order_id"]
+                    .Value);
+
+            try
+            {
+                var response = await httpClient.PatchAsync(
+                    $"orders/{orderId}/accept-rider/{_userId}",
+                    null);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Order accepted.");
+                }
+                else
+                {
+                    MessageBox.Show("Order นี้ถูกรับไปแล้ว");
+                }
+
+                await LoadOrdersAsync();
+                await CheckCurrentOrderAsync();
             }
             catch (Exception ex)
             {
@@ -447,14 +246,14 @@ namespace Delivery
     object sender,
     EventArgs e)
         {
-            LoadOrders();
-
-            CheckCurrentOrder();
+            _ = LoadOrdersAsync();
+            _ = CheckCurrentOrderAsync();
         }
         protected override void OnFormClosed(
     FormClosedEventArgs e)
         {
             refreshTimer.Stop();
+            httpClient.Dispose();
 
             base.OnFormClosed(e);
         }

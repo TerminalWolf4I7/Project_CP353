@@ -1,18 +1,22 @@
 using System;
+using System;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Windows.Forms;
-using Npgsql;
 
 namespace Delivery
 {
     public partial class Login : Form
     {
+        private readonly HttpClient httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:5000/api/") };
+
         public Login()
         {
             InitializeComponent();
         }
 
-        private void btnLogin_Click(object sender, EventArgs e)
+        private async void btnLogin_Click(object sender, EventArgs e)
         {
             try
             {
@@ -22,56 +26,55 @@ namespace Delivery
                     return;
                 }
 
-                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
+                var payload = new Delivery.Api.Models.LoginRequest(userId);
+                var response = await httpClient.PostAsJsonAsync("auth/login", payload);
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    conn.Open();
-                    string query = "SELECT role FROM users WHERE user_id = @id";
-                    using (NpgsqlCommand cmd = new NpgsqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@id", userId);
-                        object result = cmd.ExecuteScalar();
-
-                        if (result == null)
-                        {
-                            MessageBox.Show("User ID not found");
-                            return;
-                        }
-
-                        string role = result.ToString();
-                        Form nextForm = null;
-
-                        if (role == "Customer")
-                        {
-                            nextForm = new CustomerForm(userId);
-                        }
-                        else if (role == "Restaurant")
-                        {
-                            nextForm = new RestaurantForm(userId);
-                        }
-                        else if (role == "Rider")
-                        {
-                            nextForm = new RiderForm(userId);
-                        }
-                        else
-                        {
-                            MessageBox.Show("Unknown role: " + role);
-                            return;
-                        }
-
-                        MessageBox.Show("Login Success");
-
-                        nextForm.FormClosed += (s, args) =>
-                        {
-                            if (!Application.OpenForms.OfType<Login>().Any())
-                            {
-                                Application.Exit();
-                            }
-                        };
-
-                        nextForm.Show();
-                        this.Hide();
-                    }
+                    MessageBox.Show("User ID not found");
+                    return;
                 }
+
+                var login = await response.Content.ReadFromJsonAsync<Delivery.Api.Models.LoginResponse>();
+                if (login == null)
+                {
+                    MessageBox.Show("Login failed");
+                    return;
+                }
+
+                string role = login.Role;
+                Form nextForm = null;
+
+                if (role == "Customer")
+                {
+                    nextForm = new CustomerForm(userId);
+                }
+                else if (role == "Restaurant")
+                {
+                    nextForm = new RestaurantForm(userId);
+                }
+                else if (role == "Rider")
+                {
+                    nextForm = new RiderForm(userId);
+                }
+                else
+                {
+                    MessageBox.Show("Unknown role: " + role);
+                    return;
+                }
+
+                MessageBox.Show("Login Success");
+
+                nextForm.FormClosed += (s, args) =>
+                {
+                    if (!Application.OpenForms.OfType<Login>().Any())
+                    {
+                        Application.Exit();
+                    }
+                };
+
+                nextForm.Show();
+                Hide();
             }
             catch (Exception ex)
             {
@@ -82,6 +85,12 @@ namespace Delivery
         private void txtUserId_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            httpClient.Dispose();
+            base.OnFormClosed(e);
         }
     }
 }

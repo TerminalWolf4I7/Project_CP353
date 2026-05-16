@@ -1,12 +1,15 @@
 ﻿using System;
+using System;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Windows.Forms;
-using Npgsql;
 
 namespace Delivery
 {
     public partial class RestaurantForm : Form
     {
         private readonly int userId;
+        private readonly HttpClient httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:5000/api/") };
 
         public RestaurantForm(int userId)
         {
@@ -19,26 +22,16 @@ namespace Delivery
             buttonLogout.Click += BtnLogout_Click;
         }
 
-        private void RestaurantForm_Load(object? sender, EventArgs e)
+        private async void RestaurantForm_Load(object? sender, EventArgs e)
         {
             try
             {
-                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
+                var restaurant = await httpClient.GetFromJsonAsync<Delivery.Api.Models.RestaurantDto>(
+                    $"restaurants/by-user/{userId}");
+
+                if (restaurant != null)
                 {
-                    conn.Open();
-
-                    string query = "SELECT name FROM restaurants WHERE user_id = @user_id";
-
-                    using (NpgsqlCommand cmd = new NpgsqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@user_id", userId);
-                        object result = cmd.ExecuteScalar();
-
-                        if (result != null)
-                        {
-                            label1.Text = result.ToString();
-                        }
-                    }
+                    label1.Text = restaurant.Name;
                 }
             }
             catch (Exception ex)
@@ -68,6 +61,12 @@ namespace Delivery
                 loginForm.Show();
                 Close();
             }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            httpClient.Dispose();
+            base.OnFormClosed(e);
         }
     }
 }

@@ -1,14 +1,16 @@
 using System;
 using System.Drawing;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Windows.Forms;
-using Npgsql;
 
 namespace Delivery
 {
     public partial class CustomerForm : Form
     {
         private int userId;
+        private readonly HttpClient httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:5000/api/") };
 
         // สีโทนของแต่ละร้าน (วนซ้ำ) เพื่อความสวยงาม
         private Color[] accentColors = new Color[]
@@ -33,39 +35,40 @@ namespace Delivery
             this.Load += CustomerForm_Load;
         }
 
-        private void CustomerForm_Load(object sender, EventArgs e)
+        private async void CustomerForm_Load(object sender, EventArgs e)
         {
-            LoadRestaurants();
+            await LoadRestaurantsAsync();
         }
 
-        private void LoadRestaurants()
+        private async Task LoadRestaurantsAsync()
         {
             try
             {
                 flpRestaurants.Controls.Clear();
-                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
+                var restaurants = await httpClient.GetFromJsonAsync<List<Delivery.Api.Models.RestaurantDto>>(
+                    "restaurants");
+
+                if (restaurants == null)
                 {
-                    conn.Open();
-                    string query = "SELECT restaurant_id, name, address, phone FROM restaurants ORDER BY restaurant_id";
-                    using (NpgsqlCommand cmd = new NpgsqlCommand(query, conn))
-                    using (NpgsqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        int index = 0;
-                        while (reader.Read())
-                        {
-                            int id = reader.GetInt32(0);
-                            string name = reader.GetString(1);
-                            string address = reader.IsDBNull(2) ? "" : reader.GetString(2);
-                            string phone = reader.IsDBNull(3) ? "" : reader.GetString(3);
+                    return;
+                }
 
-                            Color accent = accentColors[index % accentColors.Length];
-                            string emoji = categoryEmojis[index % categoryEmojis.Length];
+                int index = 0;
+                foreach (var restaurant in restaurants)
+                {
+                    Color accent = accentColors[index % accentColors.Length];
+                    string emoji = categoryEmojis[index % categoryEmojis.Length];
 
-                            Panel card = CreateRestaurantCard(id, name, address, phone, accent, emoji);
-                            flpRestaurants.Controls.Add(card);
-                            index++;
-                        }
-                    }
+                    Panel card = CreateRestaurantCard(
+                        restaurant.RestaurantId,
+                        restaurant.Name,
+                        restaurant.Address ?? string.Empty,
+                        restaurant.Phone ?? string.Empty,
+                        accent,
+                        emoji);
+
+                    flpRestaurants.Controls.Add(card);
+                    index++;
                 }
             }
             catch (Exception ex)
@@ -207,6 +210,12 @@ namespace Delivery
                 loginForm.Show();
                 this.Close();
             }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            httpClient.Dispose();
+            base.OnFormClosed(e);
         }
     }
 }

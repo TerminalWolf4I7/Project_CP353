@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Data;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Npgsql;
 
 namespace Delivery
 {
@@ -10,6 +12,7 @@ namespace Delivery
         private readonly int userId;
         private int restaurantId;
         private DataTable menuTable = new DataTable();
+        private readonly HttpClient httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:5000/api/") };
 
         public RestaurantEditForm(int userId)
         {
@@ -22,51 +25,44 @@ namespace Delivery
             buttonDelete.Click += ButtonDelete_Click;
         }
 
-        private void RestaurantEditForm_Load(object? sender, EventArgs e)
+        private async void RestaurantEditForm_Load(object? sender, EventArgs e)
         {
             try
             {
-                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
+                var restaurant = await httpClient.GetFromJsonAsync<Delivery.Api.Models.RestaurantDto>(
+                    $"restaurants/by-user/{userId}");
+
+                if (restaurant == null)
                 {
-                    conn.Open();
+                    MessageBox.Show("Restaurant not found for this user.");
+                    Close();
+                    return;
+                }
 
-                    string restaurantQuery = "SELECT restaurant_id, name FROM restaurants WHERE user_id = @user_id";
+                restaurantId = restaurant.RestaurantId;
+                textRestaurantName.Text = restaurant.Name;
 
-                    using (NpgsqlCommand cmd = new NpgsqlCommand(restaurantQuery, conn))
+                var menuItems = await httpClient.GetFromJsonAsync<List<Delivery.Api.Models.MenuItemDto>>(
+                    $"restaurants/{restaurantId}/menu");
+
+                menuTable = new DataTable();
+                menuTable.Columns.Add("item_id", typeof(int));
+                menuTable.Columns.Add("name", typeof(string));
+                menuTable.Columns.Add("price", typeof(decimal));
+
+                if (menuItems != null)
+                {
+                    foreach (var item in menuItems.OrderBy(i => i.ItemId))
                     {
-                        cmd.Parameters.AddWithValue("@user_id", userId);
-
-                        using (NpgsqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                restaurantId = reader.GetInt32(0);
-                                textRestaurantName.Text = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
-                            }
-                            else
-                            {
-                                MessageBox.Show("Restaurant not found for this user.");
-                                Close();
-                                return;
-                            }
-                        }
+                        menuTable.Rows.Add(item.ItemId, item.Name, item.Price);
                     }
+                }
 
-                    string menuQuery = "SELECT item_id, name, price FROM menu_items WHERE restaurant_id = @restaurant_id ORDER BY item_id";
+                dataGridMenu.DataSource = menuTable;
 
-                    using (NpgsqlDataAdapter adapter = new NpgsqlDataAdapter(menuQuery, conn))
-                    {
-                        adapter.SelectCommand.Parameters.AddWithValue("@restaurant_id", restaurantId);
-                        menuTable = new DataTable();
-                        adapter.Fill(menuTable);
-                    }
-
-                    dataGridMenu.DataSource = menuTable;
-
-                    if (dataGridMenu.Columns["item_id"] != null)
-                    {
-                        dataGridMenu.Columns["item_id"].Visible = false;
-                    }
+                if (dataGridMenu.Columns["item_id"] != null)
+                {
+                    dataGridMenu.Columns["item_id"].Visible = false;
                 }
             }
             catch (Exception ex)
@@ -85,7 +81,7 @@ namespace Delivery
             menuTable.Rows.Add(DBNull.Value, string.Empty, 0m);
         }
 
-        private void ButtonDelete_Click(object? sender, EventArgs e)
+        private async void ButtonDelete_Click(object? sender, EventArgs e)
         {
             if (dataGridMenu.SelectedRows.Count == 0)
             {
@@ -95,33 +91,23 @@ namespace Delivery
 
             try
             {
-                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
+                foreach (DataGridViewRow row in dataGridMenu.SelectedRows)
                 {
-                    conn.Open();
-
-                    foreach (DataGridViewRow row in dataGridMenu.SelectedRows)
+                    if (row.IsNewRow)
                     {
-                        if (row.IsNewRow)
-                        {
-                            continue;
-                        }
-
-                        object? itemIdValue = row.Cells["item_id"].Value;
-
-                        if (itemIdValue != null && itemIdValue != DBNull.Value)
-                        {
-                            int itemId = Convert.ToInt32(itemIdValue);
-
-                            using (NpgsqlCommand cmd = new NpgsqlCommand("DELETE FROM menu_items WHERE item_id = @item_id AND restaurant_id = @restaurant_id", conn))
-                            {
-                                cmd.Parameters.AddWithValue("@item_id", itemId);
-                                cmd.Parameters.AddWithValue("@restaurant_id", restaurantId);
-                                cmd.ExecuteNonQuery();
-                            }
-                        }
-
-                        dataGridMenu.Rows.Remove(row);
+                        continue;
                     }
+
+                    object? itemIdValue = row.Cells["item_id"].Value;
+
+                    if (itemIdValue != null && itemIdValue != DBNull.Value)
+                    {
+                        int itemId = Convert.ToInt32(itemIdValue);
+                        var response = await httpClient.DeleteAsync($"restaurants/menu/{itemId}?restaurantId={restaurantId}");
+                        response.EnsureSuccessStatusCode();
+                    }
+
+                    dataGridMenu.Rows.Remove(row);
                 }
             }
             catch (Exception ex)
@@ -130,7 +116,7 @@ namespace Delivery
             }
         }
 
-        private void ButtonSave_Click(object? sender, EventArgs e)
+        private async void ButtonSave_Click(object? sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(textRestaurantName.Text))
             {
@@ -140,78 +126,54 @@ namespace Delivery
 
             try
             {
-                using (NpgsqlConnection conn = new NpgsqlConnection(Database.connectionString))
+                var restaurantPayload = new Delivery.Api.Models.RestaurantUpdateRequest(textRestaurantName.Text.Trim());
+                var restaurantResponse = await httpClient.PutAsJsonAsync(
+                    $"restaurants/{restaurantId}",
+                    restaurantPayload);
+                restaurantResponse.EnsureSuccessStatusCode();
+
+                foreach (DataGridViewRow row in dataGridMenu.Rows)
                 {
-                    conn.Open();
-
-                    using (NpgsqlTransaction transaction = conn.BeginTransaction())
+                    if (row.IsNewRow)
                     {
-                        string updateRestaurant = "UPDATE restaurants SET name = @name WHERE restaurant_id = @restaurant_id";
+                        continue;
+                    }
 
-                        using (NpgsqlCommand cmd = new NpgsqlCommand(updateRestaurant, conn, transaction))
-                        {
-                            cmd.Parameters.AddWithValue("@name", textRestaurantName.Text.Trim());
-                            cmd.Parameters.AddWithValue("@restaurant_id", restaurantId);
-                            cmd.ExecuteNonQuery();
-                        }
+                    string name = row.Cells["name"].Value?.ToString() ?? string.Empty;
+                    string priceText = row.Cells["price"].Value?.ToString() ?? "0";
 
-                        string updateMenu = "UPDATE menu_items SET name = @name, price = @price WHERE item_id = @item_id AND restaurant_id = @restaurant_id";
-                        string insertMenu = "INSERT INTO menu_items (restaurant_id, name, price) VALUES (@restaurant_id, @name, @price) RETURNING item_id";
+                    if (string.IsNullOrWhiteSpace(name))
+                    {
+                        MessageBox.Show("Menu item name is required.");
+                        return;
+                    }
 
-                        foreach (DataGridViewRow row in dataGridMenu.Rows)
-                        {
-                            if (row.IsNewRow)
-                            {
-                                continue;
-                            }
+                    if (!decimal.TryParse(priceText, out decimal price))
+                    {
+                        MessageBox.Show("Invalid price value.");
+                        return;
+                    }
 
-                            string name = row.Cells["name"].Value?.ToString() ?? string.Empty;
-                            string priceText = row.Cells["price"].Value?.ToString() ?? "0";
+                    var payload = new Delivery.Api.Models.MenuItemUpsertRequest(name, price);
+                    object? itemIdValue = row.Cells["item_id"].Value;
 
-                            if (string.IsNullOrWhiteSpace(name))
-                            {
-                                MessageBox.Show("Menu item name is required.");
-                                transaction.Rollback();
-                                return;
-                            }
+                    if (itemIdValue == null || itemIdValue == DBNull.Value)
+                    {
+                        var response = await httpClient.PostAsJsonAsync(
+                            $"restaurants/{restaurantId}/menu",
+                            payload);
+                        response.EnsureSuccessStatusCode();
 
-                            if (!decimal.TryParse(priceText, out decimal price))
-                            {
-                                MessageBox.Show("Invalid price value.");
-                                transaction.Rollback();
-                                return;
-                            }
-
-                            object? itemIdValue = row.Cells["item_id"].Value;
-
-                            if (itemIdValue == null || itemIdValue == DBNull.Value)
-                            {
-                                using (NpgsqlCommand cmd = new NpgsqlCommand(insertMenu, conn, transaction))
-                                {
-                                    cmd.Parameters.AddWithValue("@restaurant_id", restaurantId);
-                                    cmd.Parameters.AddWithValue("@name", name);
-                                    cmd.Parameters.AddWithValue("@price", price);
-
-                                    object? newId = cmd.ExecuteScalar();
-                                    row.Cells["item_id"].Value = newId;
-                                }
-                            }
-                            else
-                            {
-                                int itemId = Convert.ToInt32(itemIdValue);
-
-                                using (NpgsqlCommand cmd = new NpgsqlCommand(updateMenu, conn, transaction))
-                                {
-                                    cmd.Parameters.AddWithValue("@name", name);
-                                    cmd.Parameters.AddWithValue("@price", price);
-                                    cmd.Parameters.AddWithValue("@item_id", itemId);
-                                    cmd.Parameters.AddWithValue("@restaurant_id", restaurantId);
-                                    cmd.ExecuteNonQuery();
-                                }
-                            }
-                        }
-
-                        transaction.Commit();
+                        int newId = await response.Content.ReadFromJsonAsync<int>();
+                        row.Cells["item_id"].Value = newId;
+                    }
+                    else
+                    {
+                        int itemId = Convert.ToInt32(itemIdValue);
+                        var response = await httpClient.PutAsJsonAsync(
+                            $"restaurants/menu/{itemId}",
+                            payload);
+                        response.EnsureSuccessStatusCode();
                     }
                 }
 
@@ -221,6 +183,12 @@ namespace Delivery
             {
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            httpClient.Dispose();
+            base.OnFormClosed(e);
         }
     }
 }
