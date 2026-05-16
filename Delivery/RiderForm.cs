@@ -110,7 +110,6 @@ namespace Delivery
 
                 conn.Open();
 
-
                 string sql = @"
             SELECT
                 order_id,
@@ -118,21 +117,18 @@ namespace Delivery
                 status,
                 COALESCE(rider_id,0) AS rider_id
             FROM orders
+            WHERE status = 'Waiting for rider'
             ORDER BY order_id";
-
 
                 using var da =
                     new NpgsqlDataAdapter(
                         sql,
                         conn);
 
-
                 DataTable dt =
                     new DataTable();
 
-
                 da.Fill(dt);
-
 
                 dataGridOrders.DataSource =
                     dt;

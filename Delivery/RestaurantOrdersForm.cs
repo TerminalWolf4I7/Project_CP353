@@ -126,7 +126,7 @@ namespace Delivery
 
         private void ButtonFinishCooking_Click(object? sender, EventArgs e)
         {
-            UpdateOrderStatus("Cooking", "รอไรเดอร์");
+            UpdateOrderStatus("Cooking", "Waiting for rider");
         }
 
         private void DeleteOrder(string expectedStatus)
