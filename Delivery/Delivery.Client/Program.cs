@@ -1,16 +1,48 @@
+// ===========================================================================
+// สรุปภาพรวมของแอปพลิเคชัน (Application Overview):
+//
+// ระบบนี้เป็น WinForms Client ที่ทำหน้าที่เป็น Presentation Layer
+// มีหน้าที่หลักคือการรับข้อมูลจากผู้ใช้และแสดงผลอินเทอร์เฟซที่สวยงาม
+//
+// ลำดับการทำงาน (Flow):
+// 1. หน้าจอ Login -> ตรวจสอบสิทธิ์และเปิดฟอร์มตาม Role (Customer, Restaurant, Rider)
+// 2. สื่อสารกับ Backend API ผ่านคลาส RestUtil (ใช้ HttpClient)
+// 3. จัดการสถานะ UI และการนำทางระหว่างหน้าจอ (Navigation)
+//
+// สถาปัตยกรรม (Architecture):
+// - UI Layer      : Windows Forms (.cs และ .Designer.cs)
+// - Service Layer : RestUtil (จัดการการเรียก HTTP REST API)
+// - Model Layer   : DTO Models (โครงสร้างข้อมูลที่ใช้รับ-ส่งกับ API)
+// ===========================================================================
+
 namespace Delivery.Client
 {
+    /// <summary>
+    /// Program เป็นคลาสหลักที่เป็นจุดเริ่มต้น (Entry Point) ของแอปพลิเคชันฝั่ง Client
+    /// มีหน้าที่ในการเตรียมความพร้อมและเริ่มวงจรชีวิตของหน้าจอ UI
+    /// </summary>
     internal static class Program
     {
         /// <summary>
-        ///  The main entry point for the application.
+        /// Main() เป็นฟังก์ชันแรกที่ถูกเรียกเมื่อเปิดโปรแกรม
         /// </summary>
+        /// <remarks>
+        /// ขั้นตอนการทำงาน:
+        /// 1. ตั้งค่าการแสดงผลให้รองรับ High DPI (เพื่อให้ตัวหนังสือชัดเจนในจอความละเอียดสูง)
+        /// 2. เปิดใช้งาน Visual Styles (เพื่อให้ปุ่มและคอนโทรลต่างๆ ดูเป็น Windows สมัยใหม่)
+        /// 3. เริ่มต้น Message Loop ของ UI เพื่อให้หน้าต่างตอบสนองต่อผู้ใช้
+        /// 4. กำหนดให้หน้า Login เป็นหน้าเริ่มต้นของระบบ
+        /// </remarks>
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
+            // 1. เตรียมความพร้อมด้านกราฟิกและฟอนต์พื้นฐาน
+            // ฟังก์ชันนี้จะจัดการเรื่องการรองรับหน้าจอที่แตกต่างกัน (DPI Awareness)
             ApplicationConfiguration.Initialize();
+
+            // 2. รันแอปพลิเคชันโดยเริ่มที่หน้า Login
+            // เมื่อหน้า Login ถูกปิดลง (เช่น ผู้ใช้กดปิดโปรแกรม) วงจรชีวิตของแอปจะสิ้นสุดลงที่นี่
+            // แต่ถ้า Login สำเร็จ เรามักจะเปิดฟอร์มใหม่และซ่อนหน้า Login ไว้แทน
             Application.Run(new Login());
         }
     }
