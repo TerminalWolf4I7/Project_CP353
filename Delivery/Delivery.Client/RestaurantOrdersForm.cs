@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Delivery.Client.Models;
@@ -51,6 +52,9 @@ namespace Delivery.Client
 
             // เปลี่ยนปุ่ม action ตาม order ที่เลือก
             dataGridOrders.SelectionChanged += DataGridOrders_SelectionChanged;
+
+            dataGridOrders.CellDoubleClick +=
+                DataGridOrders_CellDoubleClick;
 
             // ปุ่มรับออเดอร์
             buttonAccept.Click += ButtonAccept_Click;
@@ -178,6 +182,76 @@ namespace Delivery.Client
         private void DataGridOrders_SelectionChanged(object? sender, EventArgs e)
         {
             UpdateButtonVisibility();
+        }
+
+        private async void DataGridOrders_CellDoubleClick(
+            object? sender,
+            DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0)
+            {
+                return;
+            }
+
+            object? orderIdValue =
+                dataGridOrders.Rows[e.RowIndex]
+                .Cells["order_id"].Value;
+
+            if (orderIdValue == null || orderIdValue == DBNull.Value)
+            {
+                MessageBox.Show("Order not found.");
+                return;
+            }
+
+            int orderId = Convert.ToInt32(orderIdValue);
+
+            await ShowOrderDetailsAsync(orderId);
+        }
+
+        private async Task ShowOrderDetailsAsync(int orderId)
+        {
+            try
+            {
+                var details = await RestUtil.GetAsync<OrderDetailDto>(
+                    $"orders/{orderId}/details");
+
+                if (details == null)
+                {
+                    MessageBox.Show("Order not found.");
+                    return;
+                }
+
+                var items = await RestUtil.GetAsync<List<OrderItemDto>>(
+                    $"orders/{orderId}");
+
+                StringBuilder sb = new StringBuilder();
+
+                sb.AppendLine($"Order ID : {details.OrderId}");
+                sb.AppendLine($"Customer : {details.CustomerName}");
+                sb.AppendLine($"Restaurant : {details.RestaurantId}");
+                sb.AppendLine($"Status : {details.Status}");
+                sb.AppendLine($"Total : {details.TotalPrice}");
+
+                sb.AppendLine();
+                sb.AppendLine("Items:");
+
+                if (items != null)
+                {
+                    foreach (var item in items)
+                    {
+                        sb.AppendLine(
+                            $"{item.Name} x {item.Quantity} ({item.Price})");
+                    }
+                }
+
+                MessageBox.Show(
+                    sb.ToString(),
+                    $"Order {orderId}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         // อัปเดตปุ่ม action ตามสถานะของ order ที่เลือก
