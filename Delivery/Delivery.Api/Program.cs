@@ -12,7 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<DeliveryDbContext>(options =>
     // เชื่อมต่อกับ PostgreSQL บนเครื่องตัวเอง (localhost) พอร์ต 5432
     // ใช้ฐานข้อมูลชื่อ DeliveryDB ด้วย Username/Password ที่กำหนดไว้
-    options.UseNpgsql("Host=localhost;Port=5432;Username=postgres;Password=password;Database=DeliveryDB"));
+    options.UseNpgsql("Host=localhost;Port=5432;Username=postgres;Password=1234;Database=DeliveryDB"));
 
 // กำหนดให้ API รันอยู่ที่พอร์ต 5000
 // หมายเหตุ: ฝั่ง Client (RestUtil.cs) ต้องตั้งค่า URL ให้ตรงกันที่นี่ด้วย

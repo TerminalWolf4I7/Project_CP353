@@ -75,7 +75,7 @@ namespace Delivery.Client
             refreshTimer = new System.Windows.Forms.Timer();
 
             // refresh ทุก 30 วินาที
-            refreshTimer.Interval = 30000;
+            refreshTimer.Interval = 3000;
 
             // ทุกครั้งที่ timer tick จะ reload ข้อมูลใหม่
             refreshTimer.Tick += RefreshTimer_Tick;

@@ -23,6 +23,9 @@ namespace Delivery.Client
         // ใช้เก็บรายการออเดอร์บน UI
         private DataTable ordersTable = new DataTable();
 
+        // Timer สำหรับ refresh ข้อมูลอัตโนมัติ
+        private System.Windows.Forms.Timer refreshTimer;
+
         // Constructor ของหน้า RestaurantOrdersForm
         //
         // Workflow:
@@ -57,6 +60,11 @@ namespace Delivery.Client
 
             // ปุ่มแจ้งว่าทำอาหารเสร็จแล้ว
             buttonFinishCooking.Click += ButtonFinishCooking_Click;
+
+            refreshTimer = new System.Windows.Forms.Timer();
+            refreshTimer.Interval = 3000;
+            refreshTimer.Tick += RefreshTimer_Tick;
+            refreshTimer.Start();
         }
 
         // โหลด restaurantId จาก userId แล้วโหลดรายการออเดอร์
@@ -98,6 +106,11 @@ namespace Delivery.Client
                 // แจ้ง error เช่น API ล่ม หรือ network error
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        private void RefreshTimer_Tick(object? sender, EventArgs e)
+        {
+            _ = LoadOrdersAsync();
         }
 
         // โหลดรายการออเดอร์ของร้านจาก API
@@ -399,6 +412,13 @@ namespace Delivery.Client
                 // แจ้ง error ตอน update status
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            refreshTimer.Stop();
+
+            base.OnFormClosed(e);
         }
     }
 }
