@@ -1,0 +1,34 @@
+-- 1. ล้างข้อมูลเก่าทุกตารางให้สะอาดหมดจด เริ่มนับ ID ที่ 1 ใหม่
+TRUNCATE TABLE order_items, orders, cart_items, carts, menu_items, riders, restaurants, users RESTART IDENTITY CASCADE;
+
+-- 2. ข้อมูลผู้ใช้งานสำหรับการ Demo (Login ง่ายๆ จำตัวเลของ่ายๆ)
+INSERT INTO users (name, role) VALUES 
+('คุณสมชาย ใจดี (ลูกค้าประจำ)', 'Customer'),      -- User ID: 1
+('ป้าแดง กะเพราแท้ (เจ้าของร้าน 1)', 'Restaurant'), -- User ID: 2
+('นายสมหมาย ซิ่งไว (ไรเดอร์สุดขยัน)', 'Rider'),    -- User ID: 3
+('น้องส้ม ชานม (เจ้าของร้าน 2)', 'Restaurant');     -- User ID: 4
+
+-- 3. ข้อมูลร้านค้า (โชว์การเลือกร้านค้าหลายแบบ)
+-- ร้านที่ 1: อาคารเรียนรวม
+INSERT INTO restaurants (user_id, name, address, phone) VALUES 
+(2, 'ป้าแดง กะเพราถาดยักษ์', 'โรงอาหารกลาง มหาวิทยาลัย', '089-111-2222'); -- Restaurant ID: 1
+
+-- ร้านที่ 2: หน้ามหาวิทยาลัย
+INSERT INTO restaurants (user_id, name, address, phone) VALUES 
+(4, 'น้องส้ม ชานมพ่นไฟ', 'ซอยหน้ามหาลัย ข้างเซเว่น', '089-333-4444');  -- Restaurant ID: 2
+
+-- 4. ข้อมูลรายการอาหารของแต่ละร้าน
+-- เมนูสำหรับร้านป้าแดง (Restaurant ID: 1)
+INSERT INTO menu_items (restaurant_id, name, price, description, is_available) VALUES 
+(1, 'กะเพราหมูสับสูตรโบราณ', 55.00, 'กะเพราแท้ เผ็ดจัดจ้าน ไม่ใส่ถั่วฝักยาว', true),
+(1, 'กะเพราเนื้อโคขุนสับ', 75.00, 'ใช้เนื้อโคขุนโพนยางคำสับละเอียด หอมฉุย', true),
+(1, 'ไข่ดาวเป็ดลาวา', 12.00, 'ไข่ดาวเป็ดใบใหญ่ ไข่แดงเยิ้มๆ กรอบนอกนุ่มใน', true);
+
+-- เมนูสำหรับร้านชานมพ่นไฟ (Restaurant ID: 2)
+INSERT INTO menu_items (restaurant_id, name, price, description, is_available) VALUES 
+(2, 'ชานมไต้หวันพ่นไฟ', 45.00, 'ชานมสูตรเข้มข้น ท็อปครีมชีสเบิร์นไฟหอมๆ', true),
+(2, 'ชาเขียวมะลิเจลลี่บราวน์ซูการ์', 40.00, 'ชาเขียวใสกลิ่นมะลิหอมสดชื่น พร้อมเจลลี่เคี้ยวหนึบ', true);
+
+-- 5. ข้อมูลไรเดอร์พร้อมรับงาน
+INSERT INTO riders (user_id, vehicle_type, status) VALUES 
+(3, 'Motorcycle', 'Available'); -- Rider ID: 1 (เชื่อมกับ User ID: 3)
