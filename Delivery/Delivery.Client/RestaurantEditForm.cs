@@ -38,6 +38,10 @@ namespace Delivery.Client
         {
             InitializeComponent();
 
+            dataGridMenu.SelectionMode =
+                DataGridViewSelectionMode.FullRowSelect;
+            dataGridMenu.MultiSelect = true;
+
             // เก็บ userId ไว้ใช้โหลดข้อมูลร้าน
             this.userId = userId;
 
